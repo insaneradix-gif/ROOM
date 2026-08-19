@@ -1,265 +1,1395 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة السفاح</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Changa:wght@400;700&display=swap');
 
-        body {
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>العالم الآخر</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            background-color: #050505;
-            color: #fff;
-            font-family: 'Changa', sans-serif;
-            overflow: hidden;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #020202;
+            color: #aaa;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+
+        /* =========================
+           الخلفية
+        ========================= */
+
+        .darkness {
+            position: fixed;
+            inset: 0;
+            z-index: -5;
+
+            background:
+                radial-gradient(
+                    circle at center,
+                    #151515 0%,
+                    #080808 35%,
+                    #000 80%
+                );
+        }
+
+        .fog {
+            position: fixed;
+            inset: -20%;
+            z-index: -4;
+
+            background:
+                radial-gradient(
+                    ellipse,
+                    rgba(100,100,100,.08),
+                    transparent 60%
+                );
+
+            animation: fogMove 12s infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes fogMove {
+
+            from {
+                transform: scale(1);
+                opacity: .3;
+            }
+
+            to {
+                transform: scale(1.4);
+                opacity: .8;
+            }
+
+        }
+
+
+        /* =========================
+           الشاشة الأولى
+        ========================= */
+
+        #intro {
+
+            min-height: 100vh;
+
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            transition: background-color 0.5s ease;
-        }
 
-        /* تأثيرات الواجهة الأولى */
-        #page1 {
+            padding: 25px;
+
             text-align: center;
-            animation: fadeIn 2s ease-in;
+
+            transition:
+                opacity 2s,
+                transform 2s;
+
         }
 
-        h1 {
-            color: #8b0000;
-            text-shadow: 0 0 10px #ff0000, 0 0 20px #8b0000;
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-        }
-
-        p.riddle {
-            font-size: 1.5rem;
-            color: #b3b3b3;
-            max-width: 600px;
-            margin: 0 auto 30px;
-            line-height: 1.6;
-        }
-
-        input {
-            padding: 15px;
-            font-size: 1.2rem;
-            border: 2px solid #8b0000;
-            background: #111;
-            color: #ff0000;
-            text-align: center;
-            border-radius: 5px;
-            outline: none;
-            width: 250px;
-            font-family: 'Changa', sans-serif;
-            box-shadow: 0 0 15px rgba(139, 0, 0, 0.5);
-        }
-
-        button {
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            background: #8b0000;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-top: 20px;
-            border-radius: 5px;
-            font-family: 'Changa', sans-serif;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            background: #ff0000;
-            box-shadow: 0 0 20px #ff0000;
-        }
-
-        /* الواجهة الثانية المرعبة */
-        #page2 {
-            display: none;
-            text-align: center;
-            position: relative;
+        .intro-box {
             width: 100%;
-            height: 100%;
+            max-width: 700px;
         }
+
+        .warning {
+
+            color: #555;
+
+            font-size: 12px;
+
+            letter-spacing: 4px;
+
+            margin-bottom: 35px;
+
+            animation: blink 3s infinite;
+
+        }
+
+        @keyframes blink {
+
+            0%, 45%, 55%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .15;
+            }
+
+        }
+
+        .intro-title {
+
+            font-size:
+                clamp(30px, 8vw, 55px);
+
+            color: #ddd;
+
+            margin-bottom: 35px;
+
+            text-shadow:
+                0 0 25px #000;
+
+        }
+
+        .question {
+
+            font-size:
+                clamp(18px, 5vw, 29px);
+
+            line-height: 2;
+
+            color: #999;
+
+            margin-bottom: 45px;
+
+        }
+
+        .answer {
+
+            display: inline-block;
+
+            padding: 16px 35px;
+
+            border:
+                1px solid #444;
+
+            background:
+                rgba(255,255,255,.02);
+
+            color: #aaa;
+
+            cursor: pointer;
+
+            transition: .5s;
+
+        }
+
+        .answer:hover {
+
+            color: white;
+
+            border-color: #888;
+
+            box-shadow:
+                0 0 35px
+                rgba(255,255,255,.08);
+
+            transform:
+                scale(1.05);
+
+        }
+
+        .hint {
+
+            color: #333;
+
+            font-size: 12px;
+
+            margin-top: 25px;
+
+        }
+
+
+        /* =========================
+           العالم
+        ========================= */
+
+        #world {
+
+            display: none;
+
+            min-height: 100vh;
+
+            padding:
+                50px 20px 120px;
+
+            animation: appear 2s forwards;
+
+        }
+
+        @keyframes appear {
+
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+
+        }
+
+        .world-header {
+
+            text-align: center;
+
+            max-width: 750px;
+
+            margin:
+                0 auto 50px;
+
+        }
+
+        .eye {
+
+            font-size: 55px;
+
+            color: #555;
+
+            animation:
+                eyePulse 3s infinite;
+
+        }
+
+        @keyframes eyePulse {
+
+            0%, 100% {
+
+                opacity: .2;
+
+                text-shadow:
+                    0 0 0 transparent;
+
+            }
+
+            50% {
+
+                opacity: 1;
+
+                text-shadow:
+                    0 0 30px #777;
+
+            }
+
+        }
+
+        .world-title {
+
+            font-size:
+                clamp(28px, 7vw, 45px);
+
+            color: #aaa;
+
+            margin-top: 20px;
+
+        }
+
+        .world-description {
+
+            color: #555;
+
+            line-height: 2;
+
+            margin-top: 20px;
+
+        }
+
+
+        /* =========================
+           الرسالة
+        ========================= */
+
+        .message-box {
+
+            max-width: 600px;
+
+            margin:
+                50px auto;
+
+            padding: 35px 25px;
+
+            border:
+                1px solid #292929;
+
+            background:
+                rgba(255,255,255,.015);
+
+            box-shadow:
+                0 0 60px
+                rgba(0,0,0,.9);
+
+            text-align: center;
+
+            transition: .5s;
+
+        }
+
+        .message-title {
+
+            color: #666;
+
+            letter-spacing: 5px;
+
+            margin-bottom: 25px;
+
+        }
+
+        .message-box p {
+
+            color: #777;
+
+            line-height: 2;
+
+        }
+
+        .challenge {
+
+            margin: 30px 0;
+
+            color: #aaa;
+
+            font-size: 27px;
+
+            letter-spacing: 8px;
+
+        }
+
+        .challenge-text {
+
+            margin-bottom: 25px;
+
+        }
+
+
+        /* =========================
+           فيسبوك
+        ========================= */
+
+        .facebook-link {
+
+            display: inline-block;
+
+            padding:
+                15px 35px;
+
+            border:
+                1px solid #333;
+
+            color: #888;
+
+            text-decoration: none;
+
+            transition: .5s;
+
+        }
+
+        .facebook-link:hover {
+
+            color: white;
+
+            border-color: #888;
+
+            box-shadow:
+                0 0 30px
+                rgba(255,255,255,.08);
+
+            transform:
+                scale(1.05);
+
+        }
+
+
+        /* =========================
+           اللغز
+        ========================= */
+
+        .puzzle {
+
+            max-width: 700px;
+
+            margin:
+                70px auto;
+
+            padding:
+                35px 20px;
+
+            border-top:
+                1px solid #222;
+
+            border-bottom:
+                1px solid #222;
+
+            text-align: center;
+
+        }
+
+        .puzzle-number {
+
+            color: #444;
+
+            letter-spacing: 5px;
+
+            margin-bottom: 25px;
+
+        }
+
+        .puzzle h3 {
+
+            color: #aaa;
+
+            font-size: 21px;
+
+            line-height: 2;
+
+        }
+
+        .answers {
+
+            display: grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap: 12px;
+
+            margin-top: 30px;
+
+        }
+
+        .answers button {
+
+            padding: 15px;
+
+            background: #050505;
+
+            border:
+                1px solid #292929;
+
+            color: #777;
+
+            cursor: pointer;
+
+            transition: .4s;
+
+            font-size: 15px;
+
+        }
+
+        .answers button:hover {
+
+            color: white;
+
+            border-color: #777;
+
+            transform:
+                translateY(-3px);
+
+        }
+
+        #puzzle-result {
+
+            min-height: 50px;
+
+            margin-top: 25px;
+
+            color: #777;
+
+            line-height: 2;
+
+        }
+
+
+        /* =========================
+           أسرار
+        ========================= */
+
+        .secret-area {
+
+            max-width: 700px;
+
+            height: 150px;
+
+            margin: auto;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content:
+                space-around;
+
+            color: #111;
+
+        }
+
+        .secret {
+
+            cursor: pointer;
+
+            transition: .5s;
+
+            font-size: 20px;
+
+        }
+
+        .secret:hover {
+
+            color: #777;
+
+            text-shadow:
+                0 0 20px #777;
+
+        }
+
+
+        /* =========================
+           الروبوت
+        ========================= */
 
         #robot {
-            font-size: 4rem;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            transition: all 1.5s ease-in-out;
-            z-index: 10;
+
+            position: fixed;
+
+            right: 20px;
+
+            bottom: 20px;
+
+            width: 230px;
+
+            padding: 18px;
+
+            background: #050505;
+
+            border:
+                1px solid #292929;
+
+            box-shadow:
+                0 0 40px
+                rgba(0,0,0,.9);
+
+            z-index: 100;
+
+            transition:
+                all 1.2s ease;
+
         }
+
+        .robot-face {
+
+            font-size: 27px;
+
+            color: #777;
+
+            margin-bottom: 12px;
+
+            text-align: center;
+
+        }
+
+        #robot-text {
+
+            color: #666;
+
+            font-size: 13px;
+
+            line-height: 1.8;
+
+            text-align: center;
+
+        }
+
+
+        /* =========================
+           الروبوت الشرير
+        ========================= */
 
         #robot.evil {
-            font-size: 5rem;
-            top: 20%;
-            color: #ff0000;
-            text-shadow: 0 0 20px #ff0000;
-            animation: glitch 0.2s infinite;
+
+            right: 50%;
+
+            bottom: 50%;
+
+            transform:
+                translate(50%, 50%)
+                scale(1.15);
+
+            width: 300px;
+
+            background:
+                #030303;
+
+            border-color:
+                #555;
+
+            box-shadow:
+                0 0 80px
+                rgba(255,255,255,.08);
+
         }
 
-        .robot-text {
-            font-size: 1.5rem;
-            margin-top: 10px;
-            color: #00ff00;
-            font-weight: bold;
+        #robot.evil .robot-face {
+
+            color: #aaa;
+
+            font-size: 35px;
+
         }
 
-        .robot-text.evil-text {
-            color: #ff0000;
-            font-size: 2rem;
+
+        /* =========================
+           الرسالة الشريرة
+        ========================= */
+
+        .message-box.marked {
+
+            border-color: #555;
+
+            box-shadow:
+                0 0 80px
+                rgba(255,255,255,.08);
+
+            transform:
+                scale(1.03);
+
         }
 
-        #scary-content {
+
+        /* =========================
+           اهتزاز
+        ========================= */
+
+        .shake {
+
+            animation:
+                shake .12s infinite;
+
+        }
+
+        @keyframes shake {
+
+            0% {
+                transform:
+                    translate(0);
+            }
+
+            25% {
+                transform:
+                    translate(3px,-2px);
+            }
+
+            50% {
+                transform:
+                    translate(-3px,2px);
+            }
+
+            75% {
+                transform:
+                    translate(2px,2px);
+            }
+
+            100% {
+                transform:
+                    translate(-2px,-2px);
+            }
+
+        }
+
+
+        /* =========================
+           شاشة الرعب
+        ========================= */
+
+        #horror {
+
             display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
+
+            position: fixed;
+
+            inset: 0;
+
+            background: #000;
+
+            z-index: 999;
+
+            justify-content:
+                center;
+
+            align-items:
+                center;
+
+            text-align: center;
+
         }
 
-        .fb-link {
-            display: inline-block;
-            font-size: 2rem;
-            color: #ff0000;
-            text-decoration: none;
-            border: 2px dashed #ff0000;
-            padding: 20px;
-            margin: 20px 0;
-            background: rgba(255, 0, 0, 0.1);
-            animation: pulse 1s infinite;
+        #horror-text {
+
+            color: #aaa;
+
+            font-size:
+                clamp(25px, 7vw, 60px);
+
+            letter-spacing: 5px;
+
+            animation:
+                horrorBlink .2s infinite;
+
         }
 
-        .challenge-msg {
-            font-size: 1.8rem;
-            color: #fff;
-            text-shadow: 2px 2px 5px #000;
+        @keyframes horrorBlink {
+
+            0% {
+                opacity: .2;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: .3;
+            }
+
         }
 
-        /* زر الخيار المجنون */
-        #crazy-btn {
-            position: absolute;
-            bottom: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: #fff;
-            padding: 10px 20px;
-            border: 1px solid #fff;
-            cursor: pointer;
-            font-family: 'Changa', sans-serif;
-            display: none;
+
+        /* =========================
+           الهاتف
+        ========================= */
+
+        @media (max-width: 600px) {
+
+            .answers {
+
+                grid-template-columns:
+                    1fr;
+
+            }
+
+            #robot {
+
+                width: 185px;
+
+                right: 10px;
+
+                bottom: 10px;
+
+            }
+
+            #robot.evil {
+
+                width: 280px;
+
+            }
+
         }
 
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
-            70% { box-shadow: 0 0 0 20px rgba(255, 0, 0, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
-        }
-
-        @keyframes glitch {
-            0% { transform: translate(-50%, -50%) translate(2px, 2px); }
-            20% { transform: translate(-50%, -50%) translate(-2px, -2px); }
-            40% { transform: translate(-50%, -50%) translate(2px, -2px); }
-            60% { transform: translate(-50%, -50%) translate(-2px, 2px); }
-            80% { transform: translate(-50%, -50%) translate(2px, 2px); }
-            100% { transform: translate(-50%, -50%) translate(-2px, -2px); }
-        }
-
-        .blood-bg {
-            background-color: #2b0000 !important;
-        }
     </style>
+
 </head>
+
+
 <body>
 
-    <!-- الواجهة الأولى: اللغز الفلسفي -->
-    <div id="page1">
-        <h1>مرحباً بك في النهاية...</h1>
-        <p class="riddle">"أنا شيء يحيط بك من كل جانب، لا يمكنك لمسي ولا رؤيتي.. وكلما زدت في غرفتك، قلّت قدرتك على الرؤية. فما أنا؟"</p>
-        <input type="text" id="answer" placeholder="أدخل إجابتك هنا..." autocomplete="off">
-        <br>
-        <button onclick="checkAnswer()">تأكيد</button>
-        <p id="error-msg" style="color: red; display: none; margin-top: 15px;">محاولة بائسة.. فكر مجدداً!</p>
-    </div>
 
-    <!-- الواجهة الثانية: الروبوت والتحدي المرعب -->
-    <div id="page2">
+    <!-- الخلفية -->
+
+    <div class="darkness"></div>
+
+    <div class="fog"></div>
+
+
+    <!-- =========================
+         البداية
+    ========================= -->
+
+    <section id="intro">
+
+        <div class="intro-box">
+
+            <div class="warning">
+                لا تدخل إن كنت تبحث عن إجابة سهلة...
+            </div>
+
+            <h1 class="intro-title">
+                سؤال واحد فقط...
+            </h1>
+
+            <div class="question">
+
+                إذا كان الجميع يراك...
+                <br>
+                فمن أنت عندما لا يراك أحد؟
+
+            </div>
+
+            <div
+                class="answer"
+                onclick="enterWorld()"
+            >
+                أنا... أنا فقط.
+            </div>
+
+            <div class="hint">
+                اضغط على الإجابة...
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================
+         العالم
+    ========================= -->
+
+    <section id="world">
+
+
+        <div class="world-header">
+
+            <div class="eye">
+                ◉
+            </div>
+
+            <h2 class="world-title">
+                أهلاً بك في المكان الخطأ
+            </h2>
+
+            <p class="world-description">
+
+                أنت الآن داخل عالم لا يعرف لماذا جئت...
+                <br>
+
+                لكنه كان ينتظرك.
+
+            </p>
+
+        </div>
+
+
+
+        <!-- =========================
+             الرسالة
+        ========================= -->
+
+        <div
+            class="message-box"
+            id="messageBox"
+        >
+
+            <div class="message-title">
+                رسالة مجهولة
+            </div>
+
+            <p>
+
+                تريد الدخول؟
+                <br>
+
+                إذن أثبت أنك لست مثل الباقين.
+
+            </p>
+
+            <div class="challenge">
+                تـحـدي
+            </div>
+
+            <p class="challenge-text">
+
+                أرسل هنا رسالة...
+                <br>
+
+                ربما يفتح لك أحدهم الباب.
+
+            </p>
+
+
+            <a
+                class="facebook-link"
+                href="https://www.facebook.com/LONLY8"
+                target="_blank"
+            >
+
+                أرسل هنا رسالة
+
+            </a>
+
+        </div>
+
+
+
+        <!-- =========================
+             اللغز الأول
+        ========================= -->
+
+        <div class="puzzle">
+
+            <div class="puzzle-number">
+                اللغز الأول
+            </div>
+
+            <h3>
+
+                شيءٌ كلما أخذتَ منه...
+                <br>
+
+                تركتَه خلفك.
+
+                <br><br>
+
+                ما هو؟
+
+            </h3>
+
+
+            <div class="answers">
+
+                <button
+                    onclick="wrongAnswer(this)"
+                >
+                    المال
+                </button>
+
+                <button
+                    onclick="correctAnswer(this)"
+                >
+                    الخطوات
+                </button>
+
+                <button
+                    onclick="wrongAnswer(this)"
+                >
+                    الظلام
+                </button>
+
+                <button
+                    onclick="wrongAnswer(this)"
+                >
+                    الوقت
+                </button>
+
+            </div>
+
+
+            <div id="puzzle-result"></div>
+
+        </div>
+
+
+
+        <!-- =========================
+             الأسرار
+        ========================= -->
+
+        <div class="secret-area">
+
+            <span
+                class="secret"
+                onclick="secretMessage()"
+            >
+                ...
+            </span>
+
+            <span
+                class="secret"
+                onclick="secretMessage()"
+            >
+                ◦
+            </span>
+
+            <span
+                class="secret"
+                onclick="secretMessage()"
+            >
+                .
+            </span>
+
+        </div>
+
+
+
+        <!-- =========================
+             الروبوت
+        ========================= -->
+
         <div id="robot">
-            🤖
-            <div class="robot-text" id="robot-msg">أهلاً بك يا صديقي! لقد تمكنت من حل اللغز! أنا هنا لمساعدتك ✨</div>
+
+            <div
+                class="robot-face"
+                id="robot-face"
+            >
+                ◉_◉
+            </div>
+
+            <div id="robot-text">
+
+                مرحبًا أيها الإنسان...
+                <br>
+
+                أنا هنا لمساعدتك.
+
+            </div>
+
         </div>
 
-        <div id="scary-content">
-            <a href="https://www.facebook.com/LONLY8" target="_blank" class="fb-link">بوابة الجحيم (اضغط هنا)</a>
-            <p class="challenge-msg">ارسل هنا رسالة. تحدي. لأرسلك لعالم الأغااز يا صعل علا مبتدء مثلك حلها عالم من لأغبياء 😏🍂</p>
+
+    </section>
+
+
+
+    <!-- =========================
+         شاشة الرعب
+    ========================= -->
+
+    <div id="horror">
+
+        <div id="horror-text">
+            لا تنظر خلفك...
         </div>
 
-        <button id="crazy-btn" onmouseover="runAway(this)">خيار مجنون: حاول الضغط علي!</button>
     </div>
+
+
 
     <script>
-        function checkAnswer() {
-            const answer = document.getElementById('answer').value.trim().toLowerCase();
-            const validAnswers = ['الظلام', 'ظلام', 'العتمة', 'darkness'];
 
-            if (validAnswers.includes(answer)) {
-                // الانتقال للواجهة الثانية
-                document.getElementById('page1').style.display = 'none';
-                document.getElementById('page2').style.display = 'block';
-                
-                // بدء التسلسل الدرامي للروبوت
-                startHorrorSequence();
-            } else {
-                document.getElementById('error-msg').style.display = 'block';
+
+        /* =========================
+           الدخول للعالم
+        ========================= */
+
+        function enterWorld() {
+
+            const intro =
+                document.getElementById("intro");
+
+            intro.classList.add("shake");
+
+
+            setTimeout(function() {
+
+                intro.style.opacity = "0";
+
+                intro.style.transform =
+                    "scale(1.15)";
+
+            }, 500);
+
+
+            setTimeout(function() {
+
+                intro.style.display = "none";
+
+                document.getElementById(
+                    "world"
+                ).style.display = "block";
+
+
+                robotSpeak(
+                    "أخيرًا وصلت... 👁️<br>" +
+                    "كنت أنتظرك."
+                );
+
+            }, 2200);
+
+        }
+
+
+
+        /* =========================
+           الروبوت
+        ========================= */
+
+        function robotSpeak(text) {
+
+            document.getElementById(
+                "robot-text"
+            ).innerHTML = text;
+
+        }
+
+
+
+        /* =========================
+           إجابة صحيحة
+        ========================= */
+
+        function correctAnswer(button) {
+
+            button.style.color = "#aaa";
+
+            button.style.borderColor =
+                "#777";
+
+
+            document.getElementById(
+                "puzzle-result"
+            ).innerHTML =
+
+                "أحسنت... يبدو أنك لست غبيًا تمامًا. 👁️" +
+                "<br>" +
+                "لكن لا تفرح كثيرًا...";
+
+
+            robotSpeak(
+
+                "هاه... لقد حللتها؟ 😐" +
+                "<br><br>" +
+                "كنت أتمنى أن تكون أغبى."
+
+            );
+
+
+            setTimeout(function() {
+
+                robotSpeak(
+
+                    "هناك شيء آخر..." +
+                    "<br>" +
+                    "لكنني لن أخبرك أين هو."
+
+                );
+
+            }, 3500);
+
+        }
+
+
+
+        /* =========================
+           إجابة خاطئة
+        ========================= */
+
+        function wrongAnswer(button) {
+
+            button.style.color = "#444";
+
+            button.style.borderColor =
+                "#222";
+
+
+            document.getElementById(
+                "puzzle-result"
+            ).innerHTML =
+
+                "خطأ..." +
+                "<br>" +
+                "العالم بدأ يلاحظ أنك هنا.";
+
+
+            robotSpeak(
+
+                "😂 حقًا؟" +
+                "<br>" +
+                "هذه إجابتك؟" +
+                "<br><br>" +
+                "حاول مرة أخرى أيها المبتدئ."
+
+            );
+
+        }
+
+
+
+        /* =========================
+           السر
+        ========================= */
+
+        function secretMessage() {
+
+            document.body.classList.add(
+                "shake"
+            );
+
+
+            robotSpeak(
+
+                "توقف..." +
+                "<br><br>" +
+                "لم يكن من المفترض أن تضغط على ذلك."
+
+            );
+
+
+            setTimeout(function() {
+
+                document.body.classList.remove(
+                    "shake"
+                );
+
+            }, 700);
+
+        }
+
+
+
+        /* =========================
+           تحول الروبوت
+        ========================= */
+
+        let evilActivated = false;
+
+
+        document.getElementById(
+            "robot"
+        ).addEventListener(
+            "click",
+            activateEvilRobot
+        );
+
+
+        function activateEvilRobot() {
+
+            if (evilActivated) {
+                return;
             }
+
+            evilActivated = true;
+
+
+            const robot =
+                document.getElementById(
+                    "robot"
+                );
+
+
+            const face =
+                document.getElementById(
+                    "robot-face"
+                );
+
+
+            const messageBox =
+                document.getElementById(
+                    "messageBox"
+                );
+
+
+            /* اهتزاز */
+
+            document.body.classList.add(
+                "shake"
+            );
+
+
+            /* تحول */
+
+            robot.classList.add(
+                "evil"
+            );
+
+
+            face.innerHTML =
+                "ಠ_ಠ";
+
+
+            robotSpeak(
+
+                "انتظر..." +
+                "<br><br>" +
+                "كنت أساعدك فقط."
+
+            );
+
+
+            setTimeout(function() {
+
+                robotSpeak(
+
+                    "لكنني الآن..." +
+                    "<br>" +
+                    "تذكرت شيئًا."
+
+                );
+
+            }, 2500);
+
+
+            setTimeout(function() {
+
+                robotSpeak(
+
+                    "هذه الرسالة..." +
+                    "<br>" +
+                    "كانت تنتظرني."
+
+                );
+
+            }, 5000);
+
+
+            setTimeout(function() {
+
+                messageBox.classList.add(
+                    "marked"
+                );
+
+
+                robotSpeak(
+
+                    "اقرأ..." +
+                    "<br><br>" +
+                    "أيها الوغد."
+
+                );
+
+                document.body.classList.remove(
+                    "shake"
+                );
+
+            }, 7500);
+
         }
 
-        function startHorrorSequence() {
-            const robot = document.getElementById('robot');
-            const robotMsg = document.getElementById('robot-msg');
-            const scaryContent = document.getElementById('scary-content');
-            const crazyBtn = document.getElementById('crazy-btn');
 
-            // بعد 3 ثواني يتغير الروبوت ويصبح شريراً
-            setTimeout(() => {
-                document.body.classList.add('blood-bg');
-                
-                // تغيير شكل الروبوت وكلامه
-                robot.innerHTML = `
-                    👹🔪
-                    <div class="robot-text evil-text">اقرأ ايها لوغد</div>
-                `;
-                
-                robot.classList.add('evil');
-                
-                // إظهار المحتوى المرعب (الرابط ورسالة التحدي)
-                setTimeout(() => {
-                    scaryContent.style.display = 'block';
-                    crazyBtn.style.display = 'block';
-                }, 1000);
 
-            }, 3000); // 3 ثواني من الترحيب المزيف
-        }
+        /* =========================
+           سر إضافي:
+           الضغط على العنوان
+        ========================= */
 
-        // دالة الزر المجنون الذي يهرب من المؤشر
-        function runAway(btn) {
-            const x = Math.random() * (window.innerWidth - 150);
-            const y = Math.random() * (window.innerHeight - 50);
-            btn.style.position = 'absolute';
-            btn.style.left = `${x}px`;
-            btn.style.top = `${y}px`;
-        }
+        document
+            .querySelector(".world-title")
+            .addEventListener(
+                "click",
+                function() {
+
+                    document.getElementById(
+                        "horror"
+                    ).style.display =
+                        "flex";
+
+
+                    document.getElementById(
+                        "horror-text"
+                    ).innerHTML =
+
+                        "أنت لست وحدك...";
+
+
+                    setTimeout(function() {
+
+                        document.getElementById(
+                            "horror"
+                        ).style.display =
+                            "none";
+
+                    }, 2500);
+
+                }
+            );
+
+
     </script>
+
+
 </body>
-</html>
+
+    </html>
