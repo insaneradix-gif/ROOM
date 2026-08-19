@@ -22,13 +22,58 @@ canvas{ position:fixed; inset:0; z-index:0; touch-action: none; }
 #vignette{ 
     position:fixed; inset:0; z-index:5; pointer-events:none; 
     background: radial-gradient(circle at center, transparent 20%, rgba(5,0,2,0.8) 70%, rgba(0,0,0,0.98) 100%);
-    box-shadow: inset 0 0 120px rgba(255, 0, 60, 0.2);
+    box-shadow: inset 0 0 120px var(--red-glow);
+    transition: box-shadow 0.5s ease;
 }
 
 #glitchOverlay {
     position: fixed; inset: 0; z-index: 6; pointer-events: none; opacity: 0;
-    background: rgba(255,0,60,0.12); mix-blend-mode: color-dodge; transition: opacity 0.1s;
+    background: var(--red-glow); mix-blend-mode: color-dodge; transition: opacity 0.1s;
 }
+
+/* زر وسلايدر القائمة الجانبية */
+#sideMenuBtn {
+    position: fixed; top: 18px; right: 18px; z-index: 250;
+    padding: 10px 16px; background: rgba(5, 0, 3, 0.85); border: 1px solid var(--blood-red);
+    color: var(--blood-red); font-weight: bold; font-size: 13px; letter-spacing: 1px;
+    cursor: pointer; box-shadow: 0 0 15px var(--red-glow); transition: 0.3s;
+    display: flex; align-items: center; gap: 8px; backdrop-filter: blur(8px);
+    border-radius: 4px;
+}
+#sideMenuBtn:hover { background: var(--blood-red); color: #000; transform: scale(1.03); }
+
+#sidebarOverlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 299;
+    display: none; opacity: 0; transition: opacity 0.3s ease; backdrop-filter: blur(3px);
+}
+#sidebarOverlay.active { display: block; opacity: 1; }
+
+#sidebar {
+    position: fixed; top: 0; right: -360px; width: min(340px, 85vw); height: 100%;
+    background: rgba(5, 0, 3, 0.96); border-left: 2px solid var(--blood-red);
+    z-index: 300; transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 25px 20px; box-shadow: -10px 0 40px rgba(0,0,0,0.9);
+    overflow-y: auto; backdrop-filter: blur(15px);
+}
+#sidebar.open { right: 0; }
+
+.sidebarHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--dark-border); padding-bottom: 12px; }
+.sidebarTitle { color: #fff; font-size: 15px; font-weight: 900; letter-spacing: 2px; }
+.closeBtn { background: none; border: none; color: var(--blood-red); font-size: 22px; cursor: pointer; }
+
+.sectionTitle { color: var(--blood-red); font-size: 11px; letter-spacing: 3px; font-weight: bold; margin: 22px 0 12px 0; text-transform: uppercase; }
+
+.gridGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.themeCard, .soundCard {
+    padding: 12px 10px; background: rgba(15, 0, 7, 0.8); border: 1px solid var(--dark-border);
+    color: #ccc; cursor: pointer; text-align: center; font-size: 12px; transition: 0.2s;
+    border-radius: 4px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.themeCard:hover, .soundCard:hover, .themeCard.active, .soundCard.active {
+    border-color: var(--blood-red); color: #fff; background: rgba(40, 0, 15, 0.9);
+    box-shadow: 0 0 12px var(--red-glow);
+}
+.themeColorDot { width: 16px; height: 16px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }
 
 /* واجهة الأسئلة */
 #intro{ 
@@ -176,6 +221,70 @@ canvas{ position:fixed; inset:0; z-index:0; touch-action: none; }
 
 <audio id="bgPiano" loop preload="auto" src="https://ia801503.us.archive.org/15/items/CreepyPianoMusic/Creepy%20Piano.mp3"></audio>
 
+<!-- زر فتح القائمة الجانبية -->
+<button id="sideMenuBtn" onclick="toggleSidebar()">
+    <span>🎨</span> <span>الألوان والأصوات</span>
+</button>
+
+<!-- القائمة الجانبية -->
+<div id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div id="sidebar">
+    <div class="sidebarHeader">
+        <div class="sidebarTitle">⚙️ التخصيص والأجواء</div>
+        <button class="closeBtn" onclick="toggleSidebar()">✕</button>
+    </div>
+
+    <div class="sectionTitle">🎨 ثيمات الرؤية والكون</div>
+    <div class="gridGrid">
+        <div class="themeCard active" onclick="applyTheme('red', event)">
+            <span class="themeColorDot" style="background:#ff003c; color:#ff003c;"></span>
+            <span>عدم الدم (الأصلي)</span>
+        </div>
+        <div class="themeCard" onclick="applyTheme('winter', event)">
+            <span class="themeColorDot" style="background:#00e5ff; color:#00e5ff;"></span>
+            <span>عاصفة الشتاء</span>
+        </div>
+        <div class="themeCard" onclick="applyTheme('thunder', event)">
+            <span class="themeColorDot" style="background:#a855f7; color:#a855f7;"></span>
+            <span>الرعد والبرق</span>
+        </div>
+        <div class="themeCard" onclick="applyTheme('emerald', event)">
+            <span class="themeColorDot" style="background:#00ff66; color:#00ff66;"></span>
+            <span>الهاوية الخضراء</span>
+        </div>
+        <div class="themeCard" onclick="applyTheme('gold', event)">
+            <span class="themeColorDot" style="background:#ffb700; color:#ffb700;"></span>
+            <span>الخلود الذهبي</span>
+        </div>
+        <div class="themeCard" onclick="applyTheme('cyber', event)">
+            <span class="themeColorDot" style="background:#ff00ff; color:#ff00ff;"></span>
+            <span>السيكولوجية النيون</span>
+        </div>
+    </div>
+
+    <div class="sectionTitle">🔊 المؤثرات والأصوات</div>
+    <div class="gridGrid">
+        <div class="soundCard active" onclick="selectAmbientSound('piano', event)">
+            <span>🎹 بيانو مرعب</span>
+        </div>
+        <div class="soundCard" onclick="selectAmbientSound('storm', event)">
+            <span>⚡ مطر ورعد</span>
+        </div>
+        <div class="soundCard" onclick="selectAmbientSound('wind', event)">
+            <span>❄️ صفير الشتاء</span>
+        </div>
+        <div class="soundCard" onclick="selectAmbientSound('drone', event)">
+            <span>🌌 طنين الهاوية</span>
+        </div>
+        <div class="soundCard" onclick="selectAmbientSound('cyber', event)">
+            <span>📡 نبض إلكتروني</span>
+        </div>
+        <div class="soundCard" onclick="selectAmbientSound('mute', event)">
+            <span>🔇 كتم الصوت</span>
+        </div>
+    </div>
+</div>
+
 <div id="vignette"></div>
 <div id="glitchOverlay"></div>
 
@@ -320,6 +429,9 @@ const bgPiano = document.getElementById("bgPiano");
 
 let audioContext = null;
 let masterGain = null;
+let ambientSourceNode = null;
+let ambientGainNode = null;
+let thunderInterval = null;
 
 function initAudio(){
     if(bgPiano) {
@@ -341,6 +453,175 @@ function initAudio(){
 
 document.addEventListener('touchstart', initAudio, { once: true });
 document.addEventListener('click', initAudio, { once: true });
+
+/* ==========================================================
+   إدارة القائمة الجانبية، الثيمات، والأصوات
+========================================================== */
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+}
+
+let currentTheme = 'red';
+const THEMES = {
+    red: { color: '#ff003c', glow: 'rgba(255, 0, 60, 0.5)', border: '#220008', fog: 0x000000, particle: 0xff003c, light: 0xff003c },
+    winter: { color: '#00e5ff', glow: 'rgba(0, 229, 255, 0.5)', border: '#002233', fog: 0x030f18, particle: 0xffffff, light: 0x80f3ff },
+    thunder: { color: '#a855f7', glow: 'rgba(168, 85, 247, 0.5)', border: '#1a0033', fog: 0x080214, particle: 0xd8b4fe, light: 0xc084fc },
+    emerald: { color: '#00ff66', glow: 'rgba(0, 255, 102, 0.5)', border: '#002208', fog: 0x011406, particle: 0x66ff99, light: 0x00ff66 },
+    gold: { color: '#ffb700', glow: 'rgba(255, 183, 0, 0.5)', border: '#221800', fog: 0x140f01, particle: 0xffe066, light: 0xffb700 },
+    cyber: { color: '#ff00ff', glow: 'rgba(255, 0, 255, 0.5)', border: '#220022', fog: 0x140014, particle: 0x00ffff, light: 0xff00ff }
+};
+
+function applyTheme(themeKey, ev) {
+    currentTheme = themeKey;
+    const t = THEMES[themeKey];
+    document.documentElement.style.setProperty('--blood-red', t.color);
+    document.documentElement.style.setProperty('--red-glow', t.glow);
+    document.documentElement.style.setProperty('--dark-border', t.border);
+
+    if(scene) {
+        scene.fog.color.setHex(t.fog);
+        scene.background.setHex(t.fog);
+        if(particlesSystem) particlesSystem.material.color.setHex(t.particle);
+        if(redLight) redLight.color.setHex(t.light);
+        if(monolithCore) monolithCore.material.color.setHex(t.light);
+    }
+
+    document.querySelectorAll('.themeCard').forEach(card => card.classList.remove('active'));
+    if(ev && ev.currentTarget) ev.currentTarget.classList.add('active');
+}
+
+function selectAmbientSound(type, ev) {
+    document.querySelectorAll('.soundCard').forEach(card => card.classList.remove('active'));
+    if(ev && ev.currentTarget) ev.currentTarget.classList.add('active');
+
+    if(ambientSourceNode) {
+        try { ambientSourceNode.stop(); } catch(e){}
+        ambientSourceNode = null;
+    }
+    if(thunderInterval) { clearInterval(thunderInterval); thunderInterval = null; }
+
+    if(type === 'piano') {
+        if(bgPiano) { bgPiano.muted = false; bgPiano.play(); }
+        return;
+    } else {
+        if(bgPiano) bgPiano.muted = true;
+    }
+
+    if(type === 'mute') return;
+
+    if(!audioContext) initAudio();
+
+    ambientGainNode = audioContext.createGain();
+    ambientGainNode.gain.value = 0.15;
+    ambientGainNode.connect(masterGain || audioContext.destination);
+
+    if(type === 'storm') {
+        createRainSound();
+        thunderInterval = setInterval(() => {
+            if(Math.random() < 0.4) triggerThunderSound();
+        }, 3500);
+    } else if(type === 'wind') {
+        createWindSound();
+    } else if(type === 'drone') {
+        createDroneSound();
+    } else if(type === 'cyber') {
+        createCyberSound();
+    }
+}
+
+function createRainSound() {
+    const bufferSize = audioContext.sampleRate * 2;
+    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+    const noise = audioContext.createBufferSource();
+    noise.buffer = buffer; noise.loop = true;
+
+    const filter = audioContext.createBiquadFilter();
+    filter.type = 'lowpass'; filter.frequency.value = 1000;
+
+    noise.connect(filter); filter.connect(ambientGainNode);
+    noise.start(); ambientSourceNode = noise;
+}
+
+function triggerThunderSound() {
+    if(!audioContext) return;
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(60, audioContext.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(10, audioContext.currentTime + 1.5);
+    
+    gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1.5);
+
+    osc.connect(gain); gain.connect(masterGain || audioContext.destination);
+    osc.start(); osc.stop(audioContext.currentTime + 1.5);
+
+    if(redLight && currentTheme === 'thunder') {
+        redLight.intensity = 20;
+        setTimeout(() => redLight.intensity = 3, 120);
+    }
+}
+
+function createWindSound() {
+    const bufferSize = audioContext.sampleRate * 2;
+    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+    const noise = audioContext.createBufferSource();
+    noise.buffer = buffer; noise.loop = true;
+
+    const filter = audioContext.createBiquadFilter();
+    filter.type = 'bandpass'; filter.frequency.value = 400; filter.Q.value = 3.0;
+
+    const lfo = audioContext.createOscillator();
+    lfo.frequency.value = 0.2;
+    const lfoGain = audioContext.createGain();
+    lfoGain.gain.value = 300;
+    lfo.connect(lfoGain); lfoGain.connect(filter.frequency);
+    lfo.start();
+
+    noise.connect(filter); filter.connect(ambientGainNode);
+    noise.start(); ambientSourceNode = noise;
+}
+
+function createDroneSound() {
+    const osc1 = audioContext.createOscillator();
+    const osc2 = audioContext.createOscillator();
+    osc1.type = 'sawtooth'; osc2.type = 'sine';
+    osc1.frequency.value = 55; osc2.frequency.value = 55.5;
+
+    const filter = audioContext.createBiquadFilter();
+    filter.type = 'lowpass'; filter.frequency.value = 180;
+
+    osc1.connect(filter); osc2.connect(filter);
+    filter.connect(ambientGainNode);
+
+    osc1.start(); osc2.start();
+    ambientSourceNode = { stop: () => { osc1.stop(); osc2.stop(); } };
+}
+
+function createCyberSound() {
+    const osc = audioContext.createOscillator();
+    osc.type = 'square'; osc.frequency.value = 110;
+
+    const filter = audioContext.createBiquadFilter();
+    filter.type = 'lowpass'; filter.frequency.value = 400;
+
+    const lfo = audioContext.createOscillator();
+    lfo.frequency.value = 4;
+    const lfoGain = audioContext.createGain();
+    lfoGain.gain.value = 300;
+    lfo.connect(lfoGain); lfoGain.connect(filter.frequency);
+    lfo.start();
+
+    osc.connect(filter); filter.connect(ambientGainNode);
+    osc.start(); ambientSourceNode = osc;
+}
 
 function triggerGlitchEffect() {
     glitchOverlay.style.opacity = '1';
@@ -416,7 +697,7 @@ function answerQuestion(index){
 }
 
 /* ==========================================================
-   نظام العقاب الديناميكي (عقاب جديد في كل مرة + عدم إعادة Progress)
+   نظام العقاب الديناميكي
 ========================================================== */
 function triggerPunishment(){
     STATE.mistakes++;
@@ -426,14 +707,12 @@ function triggerPunishment(){
     intro.style.display = "none";
     if(puzzleModal) puzzleModal.classList.remove("active");
     
-    // التبديل بين 3 أنواع مختلفة من العقاب
     STATE.punishType = (STATE.mistakes - 1) % 3;
     STATE.punishCount = 0;
     punishBar.style.width = "0%";
     punishmentActionArea.innerHTML = "";
 
     if(STATE.punishType === 0) {
-        // عقاب 1: ضغط متكرر (عدد متغير)
         STATE.punishTarget = 40 + (STATE.mistakes * 10);
         punishmentSub.innerHTML = "عقاب الضغط السريع: قم بالضغط " + STATE.punishTarget + " مرة لتطهير خطئك المباشر.";
         punishCounter.innerHTML = "0 / " + STATE.punishTarget;
@@ -445,8 +724,7 @@ function triggerPunishment(){
         punishmentActionArea.appendChild(btn);
 
     } else if(STATE.punishType === 1) {
-        // عقاب 2: الضغط المستمر (Hold Ritual)
-        STATE.punishTarget = 100; // 100%
+        STATE.punishTarget = 100;
         punishmentSub.innerHTML = "عقاب التركيز: اضغط باستمرار دون رفع يدك لمدة 6 ثوانٍ كاملة.";
         punishCounter.innerHTML = "0%";
         
@@ -486,7 +764,6 @@ function triggerPunishment(){
         punishmentActionArea.appendChild(btn);
 
     } else if(STATE.punishType === 2) {
-        // عقاب 3: كتابة نص الاعتراف
         const targetPhrase = "أنا أقر بجهلي";
         punishmentSub.innerHTML = "عقاب الاعتراف: اكتب العبارة التالية بدقة:<br><strong style='color:#fff;'>"+targetPhrase+"</strong>";
         punishCounter.innerHTML = "WAITING";
@@ -535,26 +812,26 @@ function finishPunishment(){
     correctSound();
     punishmentRoom.classList.remove("active");
     
-    // العودة وإكمال العمل من نفس السؤال دون العودة للبداية
     if(!STATE.worldStarted){
         intro.style.display = "flex";
         intro.classList.remove("hide");
         philosophy.classList.add("active");
-        createNewQuestion(); // يعرض السؤال الحالي نفسه الذي أخطأ فيه
+        createNewQuestion();
     }
 }
 
 /* ==========================================================
    المحرك الثلاثي الأبعاد THREE.JS
 ========================================================== */
-let scene, camera, renderer, monolith, monolithCore, gate, keyObject, secretObject, particlesSystem;
+let scene, camera, renderer, monolith, monolithCore, gate, keyObject, secretObject, particlesSystem, redLight;
 let clock = new THREE.Clock();
 
 function initWorld(){
     if(scene) return;
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
-    scene.fog = new THREE.FogExp2(0x000000, 0.05);
+    const t = THEMES[currentTheme];
+    scene.background = new THREE.Color(t.fog);
+    scene.fog = new THREE.FogExp2(t.fog, 0.05);
 
     camera = new THREE.PerspectiveCamera(65, window.innerWidth/window.innerHeight, 0.1, 100);
     camera.position.set(0, 1.6, 5);
@@ -567,7 +844,7 @@ function initWorld(){
     const ambient = new THREE.AmbientLight(0x110003, 1.0);
     scene.add(ambient);
 
-    const redLight = new THREE.PointLight(0xff003c, 3, 20);
+    redLight = new THREE.PointLight(t.light, 3, 20);
     redLight.position.set(0, 3, 0);
     scene.add(redLight);
 
@@ -590,7 +867,7 @@ function createMonolith(){
     const obelisk = new THREE.Mesh(geo, mat);
     
     const coreGeo = new THREE.SphereGeometry(0.2, 16, 16);
-    const coreMat = new THREE.MeshBasicMaterial({ color: 0xff003c });
+    const coreMat = new THREE.MeshBasicMaterial({ color: THEMES[currentTheme].light });
     monolithCore = new THREE.Mesh(coreGeo, coreMat);
     monolithCore.position.y = 0.5;
 
@@ -658,7 +935,7 @@ function createParticles(){
         pos[i+2] = (Math.random()-0.5)*40;
     }
     geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const mat = new THREE.PointsMaterial({ color: 0xff003c, size: 0.05, transparent: true, opacity: 0.6 });
+    const mat = new THREE.PointsMaterial({ color: THEMES[currentTheme].particle, size: 0.05, transparent: true, opacity: 0.6 });
     particlesSystem = new THREE.Points(geometry, mat);
     scene.add(particlesSystem);
 }
@@ -692,7 +969,7 @@ function setupTouchControls(){
 
     let isDragging = false, prevX = 0, prevY = 0;
     window.addEventListener("pointerdown", (e)=>{
-        if(e.target.closest("#hud") || e.target.closest("#intro")) return;
+        if(e.target.closest("#hud") || e.target.closest("#intro") || e.target.closest("#sidebar") || e.target.closest("#sideMenuBtn")) return;
         isDragging = true; prevX = e.clientX; prevY = e.clientY;
     });
     window.addEventListener("pointermove", (e)=>{
@@ -826,6 +1103,16 @@ function animate(){
         monolith.rotation.y += delta * 0.5;
         const scale = 1 + Math.sin(clock.getElapsedTime() * 4) * 0.1;
         monolithCore.scale.set(scale, scale, scale);
+    }
+
+    // حركة الشتاء والثلج المتساقط
+    if(currentTheme === 'winter' && particlesSystem) {
+        const positions = particlesSystem.geometry.attributes.position.array;
+        for(let i=1; i<positions.length; i+=3) {
+            positions[i] -= delta * 3;
+            if(positions[i] < 0) positions[i] = 10;
+        }
+        particlesSystem.geometry.attributes.position.needsUpdate = true;
     }
 
     renderer.render(scene, camera);
