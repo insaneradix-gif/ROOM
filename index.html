@@ -48,7 +48,18 @@
         font-weight: bold;
         letter-spacing: 2px;
         animation: blink 0.8s infinite alternate;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
+    }
+
+    .alert-banner {
+        color: #ff003c;
+        background: rgba(255, 0, 60, 0.1);
+        border: 1px solid #ff003c;
+        padding: 8px;
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
     }
 
     @keyframes blink {
@@ -58,19 +69,19 @@
 
     /* عرض الرقم */
     .target-number {
-        font-size: 28px;
+        font-size: 26px;
         color: #fff;
         background: #110003;
         border: 1px dashed #ff003c;
         padding: 10px;
-        margin: 15px 0;
+        margin: 10px 0 15px 0;
         letter-spacing: 3px;
         text-shadow: 0 0 8px #ff003c;
     }
 
     /* نافذة الاختراقات الوهمية */
     .terminal-box {
-        height: 140px;
+        height: 150px;
         background: #050001;
         border: 1px solid #330008;
         padding: 10px;
@@ -136,6 +147,7 @@
 
 <div class="container">
     <div class="warning-title">⚠️ SYSTEM COMPROMISED ⚠️</div>
+    <div class="alert-banner">تم اختراق جهازك بالكامل!</div>
     
     <div>TARGET DEVICE DETECTED</div>
     <div class="target-number">+212 X-XXX-XXXX</div>
@@ -182,15 +194,15 @@
     }
     setInterval(drawMatrix, 33);
 
-    // 2. سجل الأوامر الوهمي مع الإضافات
+    // 2. سجل الأوامر الوهمي المعدل
     const logs = [
-        { text: "> Bypassing security wall...", isAlert: false },
-        { text: "> FRONT CAMERA HACKED & ACCESS GRANTED [تم اختراق الكاميرا الأمامية]", isAlert: true },
+        { text: "> Bypassing system firewall...", isAlert: false },
+        { text: "> FULL DEVICE ACCESS GRANTED [تم اختراق الجهاز بالكامل]", isAlert: true },
+        { text: "> GPS TRACKING ACTIVE: LOCATION PINPOINTED [تم تحديد الموقع]", isAlert: true },
         { text: "> Extracting Whatsapp database...", isAlert: false },
-        { text: "> PHOTO GALLERY DESTROYED & ENCRYPTED [تم تدمير ألبوم الصور]", isAlert: true },
-        { text: "> Accessing contacts list...", isAlert: false },
-        { text: "> Fetching stored passwords...", isAlert: false },
-        { text: "> Uploading data to shadow server...", isAlert: false }
+        { text: "> Accessing media & photos gallery...", isAlert: false },
+        { text: "> Fetching passwords & banking data...", isAlert: false },
+        { text: "> Uploading target payload to shadow server...", isAlert: false }
     ];
 
     const terminal = document.getElementById('terminal');
@@ -222,7 +234,7 @@
             percentText.textContent = percent + '%';
         } else {
             clearInterval(progressInterval);
-            percentText.textContent = "DATA ERASED!";
+            percentText.textContent = "DEVICE LOCKED!";
         }
     }, 120);
 </script>
