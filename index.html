@@ -2,10 +2,264 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>موقعي الإلكتروني</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة السفاح</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Changa:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050505;
+            color: #fff;
+            font-family: 'Changa', sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background-color 0.5s ease;
+        }
+
+        /* تأثيرات الواجهة الأولى */
+        #page1 {
+            text-align: center;
+            animation: fadeIn 2s ease-in;
+        }
+
+        h1 {
+            color: #8b0000;
+            text-shadow: 0 0 10px #ff0000, 0 0 20px #8b0000;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        p.riddle {
+            font-size: 1.5rem;
+            color: #b3b3b3;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+        }
+
+        input {
+            padding: 15px;
+            font-size: 1.2rem;
+            border: 2px solid #8b0000;
+            background: #111;
+            color: #ff0000;
+            text-align: center;
+            border-radius: 5px;
+            outline: none;
+            width: 250px;
+            font-family: 'Changa', sans-serif;
+            box-shadow: 0 0 15px rgba(139, 0, 0, 0.5);
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background: #8b0000;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-family: 'Changa', sans-serif;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #ff0000;
+            box-shadow: 0 0 20px #ff0000;
+        }
+
+        /* الواجهة الثانية المرعبة */
+        #page2 {
+            display: none;
+            text-align: center;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        #robot {
+            font-size: 4rem;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 1.5s ease-in-out;
+            z-index: 10;
+        }
+
+        #robot.evil {
+            font-size: 5rem;
+            top: 20%;
+            color: #ff0000;
+            text-shadow: 0 0 20px #ff0000;
+            animation: glitch 0.2s infinite;
+        }
+
+        .robot-text {
+            font-size: 1.5rem;
+            margin-top: 10px;
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        .robot-text.evil-text {
+            color: #ff0000;
+            font-size: 2rem;
+        }
+
+        #scary-content {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+        }
+
+        .fb-link {
+            display: inline-block;
+            font-size: 2rem;
+            color: #ff0000;
+            text-decoration: none;
+            border: 2px dashed #ff0000;
+            padding: 20px;
+            margin: 20px 0;
+            background: rgba(255, 0, 0, 0.1);
+            animation: pulse 1s infinite;
+        }
+
+        .challenge-msg {
+            font-size: 1.8rem;
+            color: #fff;
+            text-shadow: 2px 2px 5px #000;
+        }
+
+        /* زر الخيار المجنون */
+        #crazy-btn {
+            position: absolute;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border: 1px solid #fff;
+            cursor: pointer;
+            font-family: 'Changa', sans-serif;
+            display: none;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(-50%, -50%) translate(2px, 2px); }
+            20% { transform: translate(-50%, -50%) translate(-2px, -2px); }
+            40% { transform: translate(-50%, -50%) translate(2px, -2px); }
+            60% { transform: translate(-50%, -50%) translate(-2px, 2px); }
+            80% { transform: translate(-50%, -50%) translate(2px, 2px); }
+            100% { transform: translate(-50%, -50%) translate(-2px, -2px); }
+        }
+
+        .blood-bg {
+            background-color: #2b0000 !important;
+        }
+    </style>
 </head>
 <body>
-    <h1>أهلاً بك في موقعي على GitHub!</h1>
-    <p>هذه هي الصفحة الرئيسية لموقعي التجريبي.</p>
+
+    <!-- الواجهة الأولى: اللغز الفلسفي -->
+    <div id="page1">
+        <h1>مرحباً بك في النهاية...</h1>
+        <p class="riddle">"أنا شيء يحيط بك من كل جانب، لا يمكنك لمسي ولا رؤيتي.. وكلما زدت في غرفتك، قلّت قدرتك على الرؤية. فما أنا؟"</p>
+        <input type="text" id="answer" placeholder="أدخل إجابتك هنا..." autocomplete="off">
+        <br>
+        <button onclick="checkAnswer()">تأكيد</button>
+        <p id="error-msg" style="color: red; display: none; margin-top: 15px;">محاولة بائسة.. فكر مجدداً!</p>
+    </div>
+
+    <!-- الواجهة الثانية: الروبوت والتحدي المرعب -->
+    <div id="page2">
+        <div id="robot">
+            🤖
+            <div class="robot-text" id="robot-msg">أهلاً بك يا صديقي! لقد تمكنت من حل اللغز! أنا هنا لمساعدتك ✨</div>
+        </div>
+
+        <div id="scary-content">
+            <a href="https://www.facebook.com/LONLY8" target="_blank" class="fb-link">بوابة الجحيم (اضغط هنا)</a>
+            <p class="challenge-msg">ارسل هنا رسالة. تحدي. لأرسلك لعالم الأغااز يا صعل علا مبتدء مثلك حلها عالم من لأغبياء 😏🍂</p>
+        </div>
+
+        <button id="crazy-btn" onmouseover="runAway(this)">خيار مجنون: حاول الضغط علي!</button>
+    </div>
+
+    <script>
+        function checkAnswer() {
+            const answer = document.getElementById('answer').value.trim().toLowerCase();
+            const validAnswers = ['الظلام', 'ظلام', 'العتمة', 'darkness'];
+
+            if (validAnswers.includes(answer)) {
+                // الانتقال للواجهة الثانية
+                document.getElementById('page1').style.display = 'none';
+                document.getElementById('page2').style.display = 'block';
+                
+                // بدء التسلسل الدرامي للروبوت
+                startHorrorSequence();
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+            }
+        }
+
+        function startHorrorSequence() {
+            const robot = document.getElementById('robot');
+            const robotMsg = document.getElementById('robot-msg');
+            const scaryContent = document.getElementById('scary-content');
+            const crazyBtn = document.getElementById('crazy-btn');
+
+            // بعد 3 ثواني يتغير الروبوت ويصبح شريراً
+            setTimeout(() => {
+                document.body.classList.add('blood-bg');
+                
+                // تغيير شكل الروبوت وكلامه
+                robot.innerHTML = `
+                    👹🔪
+                    <div class="robot-text evil-text">اقرأ ايها لوغد</div>
+                `;
+                
+                robot.classList.add('evil');
+                
+                // إظهار المحتوى المرعب (الرابط ورسالة التحدي)
+                setTimeout(() => {
+                    scaryContent.style.display = 'block';
+                    crazyBtn.style.display = 'block';
+                }, 1000);
+
+            }, 3000); // 3 ثواني من الترحيب المزيف
+        }
+
+        // دالة الزر المجنون الذي يهرب من المؤشر
+        function runAway(btn) {
+            const x = Math.random() * (window.innerWidth - 150);
+            const y = Math.random() * (window.innerHeight - 50);
+            btn.style.position = 'absolute';
+            btn.style.left = `${x}px`;
+            btn.style.top = `${y}px`;
+        }
+    </script>
 </body>
 </html>
