@@ -56,7 +56,7 @@
         100% { opacity: 0.2; text-shadow: none; }
     }
 
-    /* عرض الرقم Target */
+    /* عرض الرقم */
     .target-number {
         font-size: 28px;
         color: #fff;
@@ -70,7 +70,7 @@
 
     /* نافذة الاختراقات الوهمية */
     .terminal-box {
-        height: 120px;
+        height: 140px;
         background: #050001;
         border: 1px solid #330008;
         padding: 10px;
@@ -83,6 +83,11 @@
         justify-content: flex-end;
         margin-bottom: 20px;
         direction: ltr;
+    }
+
+    .alert-red {
+        color: #ff003c !important;
+        font-weight: bold;
     }
 
     /* شريط السحب */
@@ -133,7 +138,7 @@
     <div class="warning-title">⚠️ SYSTEM COMPROMISED ⚠️</div>
     
     <div>TARGET DEVICE DETECTED</div>
-    <div class="target-number">+212 658-435809</div>
+    <div class="target-number">+212 X-XXX-XXXX</div>
 
     <!-- سجل الاختراقات الوهمي -->
     <div class="terminal-box" id="terminal"></div>
@@ -149,7 +154,7 @@
 </div>
 
 <script>
-    // 1. تأثير خلفية الماتريكس
+    // 1. خلفية الماتريكس
     const canvas = document.getElementById('matrix');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
@@ -177,15 +182,15 @@
     }
     setInterval(drawMatrix, 33);
 
-    // 2. نصوص الاختراقات الوهمية
+    // 2. سجل الأوامر الوهمي مع الإضافات
     const logs = [
-        "> Bypassing security wall...",
-        "> Extracting Whatsapp database...",
-        "> Copying photos & media gallery...",
-        "> Accessing contacts list...",
-        "> Fetching stored passwords...",
-        "> Uploading data to shadow server...",
-        "> Injecting persistent backdoor..."
+        { text: "> Bypassing security wall...", isAlert: false },
+        { text: "> FRONT CAMERA HACKED & ACCESS GRANTED [تم اختراق الكاميرا الأمامية]", isAlert: true },
+        { text: "> Extracting Whatsapp database...", isAlert: false },
+        { text: "> PHOTO GALLERY DESTROYED & ENCRYPTED [تم تدمير ألبوم الصور]", isAlert: true },
+        { text: "> Accessing contacts list...", isAlert: false },
+        { text: "> Fetching stored passwords...", isAlert: false },
+        { text: "> Uploading data to shadow server...", isAlert: false }
     ];
 
     const terminal = document.getElementById('terminal');
@@ -194,7 +199,10 @@
     function addLog() {
         if (logIndex < logs.length) {
             const p = document.createElement('div');
-            p.textContent = logs[logIndex];
+            p.textContent = logs[logIndex].text;
+            if (logs[logIndex].isAlert) {
+                p.classList.add('alert-red');
+            }
             terminal.appendChild(p);
             logIndex++;
             setTimeout(addLog, Math.random() * 800 + 400);
@@ -202,7 +210,7 @@
     }
     addLog();
 
-    // 3. حركة شريط تقدم سحب البيانات
+    // 3. شريط تقدم سحب البيانات
     let percent = 0;
     const progressFill = document.getElementById('progress');
     const percentText = document.getElementById('percentText');
@@ -214,7 +222,7 @@
             percentText.textContent = percent + '%';
         } else {
             clearInterval(progressInterval);
-            percentText.textContent = "COMPLETED!";
+            percentText.textContent = "DATA ERASED!";
         }
     }, 120);
 </script>
