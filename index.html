@@ -2,14 +2,28 @@
 <html lang="ar" dir="rtl">
 
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>THE LAST QUESTION</title>
 
 <style>
+:root {
+    --bg-color: #000000;
+    --text-color: #aaaaaa;
+}
+
+[data-theme="light"] {
+    --bg-color: #ffffff;
+    --text-color: #333333;
+}
+
+[data-theme="dark"] {
+    --bg-color: #1a1a1a;
+    --text-color: #f1f1f1;
+}
+
 *{ box-sizing:border-box; margin:0; padding:0; }
-html, body{ width:100%; height:100%; overflow:hidden; background:#000; color:#aaa; font-family: Tahoma, Arial, sans-serif; }
+html, body{ width:100%; height:100%; overflow:hidden; background-color: var(--bg-color); color: var(--text-color); font-family: system-ui, -apple-system, Tahoma, Arial, sans-serif; transition: background-color 0.3s ease, color 0.3s ease; }
 body{ user-select:none; }
 canvas{ position:fixed; inset:0; z-index:0; }
 
@@ -81,6 +95,51 @@ canvas{ position:fixed; inset:0; z-index:0; }
 .endingTitle{ color:#999; font-size: clamp(30px,8vw,60px); margin-bottom:25px; }
 .endingText{ color:#555; line-height:2.2; font-size:13px; }
 
+/* تصميم لوحة أزرار التبديل العائمة */
+.theme-switcher {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 8px 12px;
+    border-radius: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    display: flex;
+    gap: 10px;
+    z-index: 1000;
+}
+
+[data-theme="dark"] .theme-switcher {
+    background-color: rgba(40, 40, 40, 0.8);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.theme-switcher button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: transform 0.2s;
+}
+
+.theme-switcher button:hover {
+    transform: scale(1.2);
+}
+
+.demo-banner {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    max-width: 300px;
+    font-size: 12px;
+    background: rgba(0,0,0,0.5);
+    padding: 10px;
+    border-radius: 8px;
+    pointer-events: none;
+}
+
 @media(max-width:600px){
     .answers{ grid-template-columns:1fr; }
     .topHud{ top:12px; left:12px; right:12px; }
@@ -91,6 +150,12 @@ canvas{ position:fixed; inset:0; z-index:0; }
 <body>
 
 <div id="vignette"></div>
+
+<!-- محتوى توضيحي للثيم -->
+<div class="demo-banner">
+    <h1 style="font-size: 14px; margin-bottom: 4px;">مرحباً بك في موقعي</h1>
+    <p>جرب الضغط على أزرار الشمس والقمر لتبديل الثيم.</p>
+</div>
 
 <!-- شاشة البداية -->
 <div id="intro">
@@ -167,6 +232,12 @@ canvas{ position:fixed; inset:0; z-index:0; }
         <div id="endingTitle" class="endingTitle"></div>
         <div id="endingText" class="endingText"></div>
     </div>
+</div>
+
+<!-- أزرار التبديل -->
+<div class="theme-switcher">
+    <button id="theme-light" title="وضع فاتح">☀️</button>
+    <button id="theme-dark" title="وضع مظلم">🌙</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -327,7 +398,7 @@ function checkBan(){
 }
 
 function choosePath(path){
-    choiceSound(); // تم تفعيل الصوت هنا
+    choiceSound();
     STATE.path = path;
     choiceScreen.classList.remove("active");
     philosophy.classList.add("active");
@@ -357,11 +428,11 @@ function createNewQuestion(){
 function answerQuestion(index){
     const q = STATE.currentQuestion;
     if(index !== q.correct){
-        wrongSound(); // تفعيل صوت الخطأ
+        wrongSound();
         exile();
         return;
     }
-    correctSound(); // تفعيل صوت الإجابة الصحيحة
+    correctSound();
     STATE.points += 500;
     updateHUD();
     philosophy.classList.remove("active");
@@ -488,11 +559,11 @@ function createParticles(){
 }
 
 function enterWorld(){
-    startAmbience(); // تشغيل جو العالم الصوتي
+    startAmbience();
     STATE.worldStarted = true;
     game.classList.add("active");
     initWorld();
-    robotSound(); // تفاعل صوتي للروبوت
+    robotSound();
     robotText.innerHTML = "أهلًا بك..." + "<br>" + "كنت أتساءل متى ستصل.";
 }
 
@@ -578,7 +649,7 @@ function exileFromWorld(){
 function openGate(){
     if(STATE.gateOpened) return;
     STATE.gateOpened = true;
-    gateSound(); // تشغيل صوت البوابة
+    gateSound();
     robotSound();
     robotText.innerHTML = "الباب مفتوح..." + "<br>" + "الآن يبدأ الجزء الحقيقي.";
     let progress=0;
@@ -657,106 +728,28 @@ function animate(){
 if(!checkBan()){
     // اللعبة تبدأ تلقائياً وتنتظر اختيار اللاعب
 }
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تجربة الوضع المظلم والفاتح</title>
-    
-    <style>
-        /* 1. الألوان الأساسية للموقع (الوضع الفاتح الافتراضي) */
-        :root {
-            --bg-color: #ffffff;
-            --text-color: #333333;
-        }
 
-        /* 2. الألوان عند تفعيل الوضع المظلم */
-        [data-theme="dark"] {
-            --bg-color: #1a1a1a;
-            --text-color: #f1f1f1;
-        }
+/* ==========================================================
+   كود الثيم الخاص بالأزرار
+========================================================== */
+const lightBtn = document.getElementById('theme-light');
+const darkBtn = document.getElementById('theme-dark');
 
-        /* 3. تطبيق الألوان على جسم الصفحة مع تأثير انتقال سلس */
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color 0.3s ease, color 0.3s ease;
-            font-family: system-ui, -apple-system, sans-serif;
-            padding: 40px;
-        }
+const currentTheme = localStorage.getItem('theme');
+if (currentTheme) {
+    document.documentElement.setAttribute('data-theme', currentTheme);
+}
 
-        /* 4. تصميم لوحة أزرار التبديل العائمة */
-        .theme-switcher {
-            position: fixed;
-            bottom: 20px;
-            right: 20px; /* يمكنك تغييرها إلى left إذا أردت الزر على اليسار */
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 8px 12px;
-            border-radius: 30px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            display: flex;
-            gap: 10px;
-            z-index: 1000;
-        }
+lightBtn.addEventListener('click', () => {
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('theme', 'light'); 
+});
 
-        /* تعديل لون اللوحة العائمة في الوضع المظلم */
-        [data-theme="dark"] .theme-switcher {
-            background-color: rgba(40, 40, 40, 0.9);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        /* تصميم الأزرار داخل اللوحة */
-        .theme-switcher button {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            border-radius: 50%;
-            transition: transform 0.2s;
-        }
-
-        .theme-switcher button:hover {
-            transform: scale(1.2);
-        }
-    </style>
-</head>
-<body>
-
-    <!-- محتوى تجريبي للصفحة -->
-    <h1>مرحباً بك في موقعي</h1>
-    <p>جرب الضغط على أزرار الشمس والقمر في أسفل الشاشة لتغيير إضاءة الموقع. سيتم حفظ خيارك حتى إذا قمت بتحديث الصفحة.</p>
-
-    <!-- 5. كود HTML لأزرار التبديل (يوضع في أسفل الصفحة) -->
-    <div class="theme-switcher">
-        <button id="theme-light" title="وضع فاتح">☀️</button>
-        <button id="theme-dark" title="وضع مظلم">🌙</button>
-    </div>
-
-    <!-- 6. كود JavaScript لتشغيل الأزرار وحفظ الخيار -->
-    <script>
-        const lightBtn = document.getElementById('theme-light');
-        const darkBtn = document.getElementById('theme-dark');
-
-        // التحقق مما إذا كان المستخدم قد اختار وضعاً مسبقاً وتم حفظه في المتصفح
-        const currentTheme = localStorage.getItem('theme');
-        if (currentTheme) {
-            document.documentElement.setAttribute('data-theme', currentTheme);
-        }
-
-        // تفعيل الوضع الفاتح عند الضغط على زر الشمس
-        lightBtn.addEventListener('click', () => {
-            document.documentElement.setAttribute('data-theme', 'light');
-            localStorage.setItem('theme', 'light'); 
-        });
-
-        // تفعيل الوضع المظلم عند الضغط على زر القمر
-        darkBtn.addEventListener('click', () => {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            localStorage.setItem('theme', 'dark'); 
-        });
-    </script>
+darkBtn.addEventListener('click', () => {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('theme', 'dark'); 
+});
+</script>
 
 </body>
 </html>
-
