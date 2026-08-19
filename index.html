@@ -3690,6 +3690,954 @@ document.addEventListener(
     {
         once:true
     }
+);/* =========================================================
+   🎮 نظام التحكم للهاتف + 🔦 المصباح + 🤖 الروبوت
+========================================================= */
+
+/* =========================
+   واجهة التحكم
+========================= */
+
+const mobileControls =
+    document.createElement("div");
+
+mobileControls.id = "mobileControls";
+
+mobileControls.innerHTML = `
+<style>
+
+#mobileControls{
+    position:fixed;
+    inset:0;
+    z-index:80;
+    pointer-events:none;
+}
+
+#joystick{
+    position:absolute;
+    left:25px;
+    bottom:35px;
+
+    width:125px;
+    height:125px;
+
+    border:1px solid rgba(180,180,180,.18);
+    border-radius:50%;
+
+    background:rgba(0,0,0,.18);
+
+    pointer-events:auto;
+
+    touch-action:none;
+}
+
+#joystickStick{
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    width:55px;
+    height:55px;
+
+    margin-left:-27.5px;
+    margin-top:-27.5px;
+
+    border-radius:50%;
+
+    border:1px solid rgba(220,220,220,.25);
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(255,255,255,.12),
+            rgba(255,255,255,.02)
+        );
+
+    box-shadow:
+        0 0 30px rgba(255,255,255,.04);
+}
+
+#lookArea{
+    position:absolute;
+
+    right:0;
+    top:0;
+
+    width:62%;
+    height:75%;
+
+    pointer-events:auto;
+
+    touch-action:none;
+}
+
+#flashlightButton{
+
+    position:absolute;
+
+    right:25px;
+    bottom:35px;
+
+    width:65px;
+    height:65px;
+
+    border-radius:50%;
+
+    border:1px solid rgba(200,200,200,.25);
+
+    background:
+        rgba(0,0,0,.55);
+
+    color:#777;
+
+    font-size:22px;
+
+    pointer-events:auto;
+
+    touch-action:none;
+
+    box-shadow:
+        0 0 30px rgba(255,255,255,.03);
+
+}
+
+#flashlightButton.on{
+    color:#ddd;
+
+    border-color:
+        rgba(255,255,255,.55);
+
+    box-shadow:
+        0 0 35px rgba(255,255,255,.12);
+}
+
+#battery{
+
+    position:absolute;
+
+    right:20px;
+    top:75px;
+
+    width:110px;
+
+    color:#555;
+
+    font-size:9px;
+
+    letter-spacing:2px;
+
+    text-align:right;
+}
+
+#batteryBar{
+
+    width:100%;
+    height:3px;
+
+    margin-top:6px;
+
+    background:#171717;
+
+}
+
+#batteryFill{
+
+    width:100%;
+    height:100%;
+
+    background:#888;
+
+    transition:
+        width .3s;
+
+}
+
+</style>
+
+<div id="lookArea"></div>
+
+<div id="joystick">
+    <div id="joystickStick"></div>
+</div>
+
+<button id="flashlightButton">
+    🔦
+</button>
+
+<div id="battery">
+
+    BATTERY
+
+    <div id="batteryBar">
+        <div id="batteryFill"></div>
+    </div>
+
+</div>
+`;
+
+document.body.appendChild(
+    mobileControls
+);
+
+
+/* =========================================================
+   متغيرات اللاعب
+========================================================= */
+
+let playerMoveX = 0;
+let playerMoveZ = 0;
+
+let flashlightBattery = 100;
+
+let flashlightOn = true;
+
+let playerYaw = 0;
+
+let playerPitch = 0;
+
+let joystickActive = false;
+
+let joystickPointer = null;
+
+let lookActive = false;
+
+let lastLookX = 0;
+
+let lastLookY = 0;
+
+
+/* =========================================================
+   🔦 المصباح
+========================================================= */
+
+let flashlight = null;
+
+function createFlashlight(){
+
+    if(!camera)
+        return;
+
+    flashlight =
+        new THREE.SpotLight(
+            0xffffff,
+            2.2,
+            18,
+            Math.PI/7,
+            .55,
+            1.2
+        );
+
+    flashlight.position.set(
+        0,
+        0,
+        0
+    );
+
+    flashlight.target.position.set(
+        0,
+        0,
+        -10
+    );
+
+    camera.add(
+        flashlight
+    );
+
+    camera.add(
+        flashlight.target
+    );
+
+}
+
+
+/* =========================================================
+   تشغيل/إطفاء المصباح
+========================================================= */
+
+function toggleFlashlight(){
+
+    if(!flashlight)
+        return;
+
+    flashlightOn =
+        !flashlightOn;
+
+    flashlight.visible =
+        flashlightOn;
+
+    const button =
+        document.getElementById(
+            "flashlightButton"
+        );
+
+    if(flashlightOn){
+
+        button.classList.add("on");
+
+    }else{
+
+        button.classList.remove("on");
+
+    }
+
+}
+
+
+/* =========================================================
+   زر المصباح
+========================================================= */
+
+document
+    .getElementById(
+        "flashlightButton"
+    )
+    .addEventListener(
+        "pointerdown",
+        function(e){
+
+            e.preventDefault();
+
+            e.stopPropagation();
+
+            toggleFlashlight();
+
+        }
+    );
+
+
+/* =========================================================
+   🎮 عصا الحركة
+========================================================= */
+
+const joystick =
+    document.getElementById(
+        "joystick"
+    );
+
+const joystickStick =
+    document.getElementById(
+        "joystickStick"
+    );
+
+
+joystick.addEventListener(
+    "pointerdown",
+    function(e){
+
+        if(!STATE.worldStarted)
+            return;
+
+        joystickActive =
+            true;
+
+        joystickPointer =
+            e.pointerId;
+
+        joystick.setPointerCapture(
+            e.pointerId
+        );
+
+        updateJoystick(
+            e.clientX,
+            e.clientY
+        );
+
+    }
+);
+
+
+joystick.addEventListener(
+    "pointermove",
+    function(e){
+
+        if(
+            !joystickActive ||
+            e.pointerId !==
+            joystickPointer
+        )
+            return;
+
+        updateJoystick(
+            e.clientX,
+            e.clientY
+        );
+
+    }
+);
+
+
+joystick.addEventListener(
+    "pointerup",
+    resetJoystick
+);
+
+
+joystick.addEventListener(
+    "pointercancel",
+    resetJoystick
+);
+
+
+function updateJoystick(
+    x,
+    y
+){
+
+    const rect =
+        joystick.getBoundingClientRect();
+
+
+    const centerX =
+        rect.left +
+        rect.width/2;
+
+
+    const centerY =
+        rect.top +
+        rect.height/2;
+
+
+    let dx =
+        x-centerX;
+
+
+    let dy =
+        y-centerY;
+
+
+    const max =
+        45;
+
+
+    const distance =
+        Math.sqrt(
+            dx*dx+
+            dy*dy
+        );
+
+
+    if(distance > max){
+
+        dx =
+            dx/distance*
+            max;
+
+        dy =
+            dy/distance*
+            max;
+
+    }
+
+
+    joystickStick.style.transform =
+        `translate(${dx}px,${dy}px)`;
+
+
+    playerMoveX =
+        dx/max;
+
+
+    playerMoveZ =
+        dy/max;
+
+}
+
+
+function resetJoystick(){
+
+    joystickActive =
+        false;
+
+    joystickPointer =
+        null;
+
+    playerMoveX =
+        0;
+
+    playerMoveZ =
+        0;
+
+    joystickStick.style.transform =
+        "translate(0,0)";
+
+}
+
+
+/* =========================================================
+   👁️ تحريك النظر باللمس
+========================================================= */
+
+const lookArea =
+    document.getElementById(
+        "lookArea"
+    );
+
+
+lookArea.addEventListener(
+    "pointerdown",
+    function(e){
+
+        if(!STATE.worldStarted)
+            return;
+
+        lookActive =
+            true;
+
+        lastLookX =
+            e.clientX;
+
+        lastLookY =
+            e.clientY;
+
+        lookArea.setPointerCapture(
+            e.pointerId
+        );
+
+    }
+);
+
+
+lookArea.addEventListener(
+    "pointermove",
+    function(e){
+
+        if(!lookActive)
+            return;
+
+
+        const dx =
+            e.clientX-lastLookX;
+
+
+        const dy =
+            e.clientY-lastLookY;
+
+
+        playerYaw -=
+            dx*.004;
+
+
+        playerPitch -=
+            dy*.003;
+
+
+        playerPitch =
+            Math.max(
+                -.8,
+                Math.min(
+                    .8,
+                    playerPitch
+                )
+            );
+
+
+        lastLookX =
+            e.clientX;
+
+        lastLookY =
+            e.clientY;
+
+    }
+);
+
+
+lookArea.addEventListener(
+    "pointerup",
+    function(){
+
+        lookActive =
+            false;
+
+    }
+);
+
+
+lookArea.addEventListener(
+    "pointercancel",
+    function(){
+
+        lookActive =
+            false;
+
+    }
+);
+
+
+/* =========================================================
+   🤖 إنشاء المصباح بعد إنشاء العالم
+========================================================= */
+
+const oldInitWorld =
+    initWorld;
+
+
+initWorld =
+    function(){
+
+        oldInitWorld();
+
+        createFlashlight();
+
+        flashlightOn =
+            true;
+
+        document
+            .getElementById(
+                "flashlightButton"
+            )
+            .classList.add("on");
+
+    };
+
+
+/* =========================================================
+   🚶 حركة اللاعب
+========================================================= */
+
+function updatePlayerMovement(){
+
+    if(
+        !STATE.worldStarted ||
+        !camera
+    )
+        return;
+
+
+    const speed =
+        .055;
+
+
+    /*
+       اتجاه أمام اللاعب
+    */
+
+    const forwardX =
+        Math.sin(playerYaw);
+
+
+    const forwardZ =
+        -Math.cos(playerYaw);
+
+
+    /*
+       الاتجاه الجانبي
+    */
+
+    const rightX =
+        Math.cos(playerYaw);
+
+
+    const rightZ =
+        Math.sin(playerYaw);
+
+
+    /*
+       الحركة
+    */
+
+    camera.position.x +=
+        (
+            forwardX * -playerMoveZ +
+            rightX * playerMoveX
+        ) * speed;
+
+
+    camera.position.z +=
+        (
+            forwardZ * -playerMoveZ +
+            rightZ * playerMoveX
+        ) * speed;
+
+
+    /*
+       حدود العالم
+    */
+
+    camera.position.x =
+        Math.max(
+            -18,
+            Math.min(
+                18,
+                camera.position.x
+            )
+        );
+
+
+    camera.position.z =
+        Math.max(
+            -18,
+            Math.min(
+                12,
+                camera.position.z
+            )
+        );
+
+}
+
+
+/* =========================================================
+   🔋 استهلاك البطارية
+========================================================= */
+
+function updateBattery(){
+
+    if(
+        !STATE.worldStarted ||
+        !flashlightOn
+    )
+        return;
+
+
+    flashlightBattery -=
+        .004;
+
+
+    flashlightBattery =
+        Math.max(
+            0,
+            flashlightBattery
+        );
+
+
+    const fill =
+        document.getElementById(
+            "batteryFill"
+        );
+
+
+    fill.style.width =
+        flashlightBattery+"%";
+
+
+    /*
+       عندما تنتهي البطارية
+    */
+
+    if(
+        flashlightBattery <= 0
+    ){
+
+        flashlightOn =
+            false;
+
+        flashlight.visible =
+            false;
+
+        document
+            .getElementById(
+                "flashlightButton"
+            )
+            .classList.remove("on");
+
+
+        robotText.innerHTML =
+            "انطفأ المصباح..." +
+            "<br>" +
+            "لا تقلق." +
+            "<br>" +
+            "أنا أراك.";
+
+    }
+
+}
+
+
+/* =========================================================
+   🤖 الروبوت يراقب اللاعب
+========================================================= */
+
+let robotDistance = 0;
+
+function updateRobotAI(){
+
+    if(
+        !robot ||
+        !camera ||
+        !STATE.worldStarted
+    )
+        return;
+
+
+    robotDistance =
+        robot.position.distanceTo(
+            camera.position
+        );
+
+
+    /*
+       الروبوت ينظر إلى اللاعب
+    */
+
+    robot.lookAt(
+        camera.position.x,
+        robot.position.y+.4,
+        camera.position.z
+    );
+
+
+    /*
+       عندما يقترب اللاعب
+    */
+
+    if(
+        robotDistance < 3
+    ){
+
+        robotText.innerHTML =
+            "لا تقترب أكثر.";
+
+    }
+
+
+    /*
+       عندما يبتعد اللاعب
+    */
+
+    else if(
+        robotDistance > 8 &&
+        !STATE.gateOpened
+    ){
+
+        robotText.innerHTML =
+            "أين تذهب؟";
+
+    }
+
+
+    /*
+       الروبوت يتحرك قليلًا
+       عندما لا ينظر إليه اللاعب
+    */
+
+    if(
+        STATE.gateOpened
+    ){
+
+        const targetX =
+            camera.position.x;
+
+        const targetZ =
+            camera.position.z;
+
+
+        /*
+           لا نسمح له بالاقتراب
+           بسرعة كبيرة
+        */
+
+        robot.position.x +=
+            (
+                targetX -
+                robot.position.x
+            )*.0008;
+
+
+        robot.position.z +=
+            (
+                targetZ -
+                robot.position.z
+            )*.0008;
+
+    }
+
+}
+
+
+/* =========================================================
+   🎥 الكاميرا
+========================================================= */
+
+function updateMobileCamera(){
+
+    if(
+        !camera ||
+        !STATE.worldStarted
+    )
+        return;
+
+
+    /*
+       الهدف أمام اللاعب
+    */
+
+    const lookDistance =
+        10;
+
+
+    const targetX =
+        camera.position.x +
+        Math.sin(playerYaw)*
+        lookDistance;
+
+
+    const targetY =
+        camera.position.y +
+        playerPitch*
+        5;
+
+
+    const targetZ =
+        camera.position.z -
+        Math.cos(playerYaw)*
+        lookDistance;
+
+
+    camera.lookAt(
+        targetX,
+        targetY,
+        targetZ
+    );
+
+}
+
+
+/* =========================================================
+   🔄 تحديث مستمر
+========================================================= */
+
+setInterval(
+    function(){
+
+        if(
+            !STATE.worldStarted
+        )
+            return;
+
+
+        updatePlayerMovement();
+
+        updateMobileCamera();
+
+        updateRobotAI();
+
+        updateBattery();
+
+    },
+    16
+);
+
+
+/* =========================================================
+   💡 تأثير المصباح
+========================================================= */
+
+setInterval(
+    function(){
+
+        if(
+            flashlight &&
+            flashlightOn
+        ){
+
+            flashlight.intensity =
+                1.9+
+                Math.random()*.25;
+
+        }
+
+    },
+    120
 );
 </script>
 
