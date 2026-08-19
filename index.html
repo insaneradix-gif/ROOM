@@ -2930,7 +2930,767 @@ if(
     */
 
 }
+/* =========================================================
+   نظام الأصوات الغامضة
+   لا يحتاج أي ملفات صوت خارجية
+========================================================= */
 
+let audioContext = null;
+let masterGain = null;
+let ambienceStarted = false;
+
+
+/* ---------------------------------------------------------
+   تشغيل نظام الصوت
+--------------------------------------------------------- */
+
+function initAudio(){
+
+    if(audioContext)
+        return;
+
+    audioContext =
+        new (window.AudioContext ||
+        window.webkitAudioContext)();
+
+
+    masterGain =
+        audioContext.createGain();
+
+
+    masterGain.gain.value =
+        0.18;
+
+
+    masterGain.connect(
+        audioContext.destination
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   نغمة غامضة
+--------------------------------------------------------- */
+
+function mysteriousTone(
+    frequency = 80,
+    duration = 2,
+    volume = .08
+){
+
+    if(!audioContext)
+        return;
+
+
+    const osc =
+        audioContext.createOscillator();
+
+
+    const gain =
+        audioContext.createGain();
+
+
+    osc.type =
+        "sine";
+
+
+    osc.frequency.value =
+        frequency;
+
+
+    gain.gain.setValueAtTime(
+        0,
+        audioContext.currentTime
+    );
+
+
+    gain.gain.linearRampToValueAtTime(
+        volume,
+        audioContext.currentTime+.3
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+        .001,
+        audioContext.currentTime+
+        duration
+    );
+
+
+    osc.connect(gain);
+
+    gain.connect(
+        masterGain
+    );
+
+
+    osc.start();
+
+    osc.stop(
+        audioContext.currentTime+
+        duration
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   صوت منخفض يشبه نبضًا
+--------------------------------------------------------- */
+
+function darkPulse(){
+
+    if(!audioContext)
+        return;
+
+
+    mysteriousTone(
+        45,
+        .8,
+        .15
+    );
+
+
+    setTimeout(
+        function(){
+
+            mysteriousTone(
+                38,
+                1,
+                .12
+            );
+
+        },
+        300
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   صوت الاختيار
+--------------------------------------------------------- */
+
+function choiceSound(){
+
+    if(!audioContext)
+        initAudio();
+
+
+    mysteriousTone(
+        140,
+        .35,
+        .08
+    );
+
+
+    mysteriousTone(
+        70,
+        .7,
+        .05
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   صوت الإجابة الصحيحة
+--------------------------------------------------------- */
+
+function correctSound(){
+
+    if(!audioContext)
+        initAudio();
+
+
+    const notes =
+        [120,180,260];
+
+
+    notes.forEach(
+        function(freq,index){
+
+            setTimeout(
+                function(){
+
+                    mysteriousTone(
+                        freq,
+                        .7,
+                        .08
+                    );
+
+                },
+                index*130
+            );
+
+        }
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   صوت الخطأ
+--------------------------------------------------------- */
+
+function wrongSound(){
+
+    if(!audioContext)
+        initAudio();
+
+
+    mysteriousTone(
+        55,
+        1.2,
+        .18
+    );
+
+
+    setTimeout(
+        function(){
+
+            mysteriousTone(
+                35,
+                1.5,
+                .12
+            );
+
+        },
+        180
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   صوت فتح البوابة
+--------------------------------------------------------- */
+
+function gateSound(){
+
+    if(!audioContext)
+        initAudio();
+
+
+    const osc =
+        audioContext.createOscillator();
+
+
+    const gain =
+        audioContext.createGain();
+
+
+    osc.type =
+        "sawtooth";
+
+
+    osc.frequency.setValueAtTime(
+        40,
+        audioContext.currentTime
+    );
+
+
+    osc.frequency.exponentialRampToValueAtTime(
+        180,
+        audioContext.currentTime+3
+    );
+
+
+    gain.gain.setValueAtTime(
+        .001,
+        audioContext.currentTime
+    );
+
+
+    gain.gain.linearRampToValueAtTime(
+        .15,
+        audioContext.currentTime+.5
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+        .001,
+        audioContext.currentTime+3
+    );
+
+
+    osc.connect(gain);
+
+    gain.connect(
+        masterGain
+    );
+
+
+    osc.start();
+
+    osc.stop(
+        audioContext.currentTime+3
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   صوت الروبوت
+--------------------------------------------------------- */
+
+function robotSound(){
+
+    if(!audioContext)
+        initAudio();
+
+
+    mysteriousTone(
+        220,
+        .2,
+        .05
+    );
+
+
+    setTimeout(
+        function(){
+
+            mysteriousTone(
+                110,
+                .4,
+                .07
+            );
+
+        },
+        150
+    );
+
+
+    setTimeout(
+        function(){
+
+            mysteriousTone(
+                70,
+                .7,
+                .05
+            );
+
+        },
+        350
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   همهمة العالم
+--------------------------------------------------------- */
+
+function startAmbience(){
+
+    if(
+        ambienceStarted
+    )
+        return;
+
+
+    ambienceStarted =
+        true;
+
+
+    if(!audioContext)
+        initAudio();
+
+
+    const oscillator =
+        audioContext.createOscillator();
+
+
+    const gain =
+        audioContext.createGain();
+
+
+    oscillator.type =
+        "sine";
+
+
+    oscillator.frequency.value =
+        42;
+
+
+    gain.gain.value =
+        .025;
+
+
+    oscillator.connect(
+        gain
+    );
+
+
+    gain.connect(
+        masterGain
+    );
+
+
+    oscillator.start();
+
+
+    /*
+       اهتزاز بطيء في الصوت
+    */
+
+    setInterval(
+        function(){
+
+            if(!audioContext)
+                return;
+
+
+            const now =
+                audioContext.currentTime;
+
+
+            gain.gain.cancelScheduledValues(
+                now
+            );
+
+
+            gain.gain.setValueAtTime(
+                .015+
+                Math.random()*.02,
+                now
+            );
+
+        },
+        1800
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   أصوات عشوائية في العالم
+--------------------------------------------------------- */
+
+function randomWorldSound(){
+
+    if(!STATE.worldStarted)
+        return;
+
+
+    const sounds = [
+
+        function(){
+
+            mysteriousTone(
+                60,
+                1.5,
+                .035
+            );
+
+        },
+
+        function(){
+
+            mysteriousTone(
+                90,
+                .8,
+                .025
+            );
+
+        },
+
+        function(){
+
+            mysteriousTone(
+                35,
+                2,
+                .04
+            );
+
+        },
+
+        function(){
+
+            mysteriousTone(
+                180,
+                .25,
+                .02
+            );
+
+        }
+
+    ];
+
+
+    const sound =
+        sounds[
+            Math.floor(
+                Math.random()*
+                sounds.length
+            )
+        ];
+
+
+    sound();
+
+}
+
+
+/* ---------------------------------------------------------
+   تشغيل الأصوات العشوائية
+--------------------------------------------------------- */
+
+setInterval(
+    randomWorldSound,
+    5000+
+    Math.random()*5000
+);
+
+
+/* ---------------------------------------------------------
+   ربط الصوت باختيار اللاعب
+--------------------------------------------------------- */
+
+const oldChoosePath =
+    choosePath;
+
+
+choosePath =
+    function(path){
+
+        initAudio();
+
+        choiceSound();
+
+        startAmbience();
+
+        oldChoosePath(path);
+
+    };
+
+
+/* ---------------------------------------------------------
+   ربط الصوت بالإجابة
+--------------------------------------------------------- */
+
+const oldAnswerQuestion =
+    answerQuestion;
+
+
+answerQuestion =
+    function(index){
+
+        initAudio();
+
+
+        const q =
+            STATE.currentQuestion;
+
+
+        if(
+            index ===
+            q.correct
+        ){
+
+            correctSound();
+
+        }
+        else{
+
+            wrongSound();
+
+        }
+
+
+        oldAnswerQuestion(index);
+
+    };
+
+
+/* ---------------------------------------------------------
+   ربط الصوت بالطرد
+--------------------------------------------------------- */
+
+const oldExile =
+    exile;
+
+
+exile =
+    function(){
+
+        initAudio();
+
+        wrongSound();
+
+        oldExile();
+
+    };
+
+
+/* ---------------------------------------------------------
+   ربط الصوت بالروبوت
+--------------------------------------------------------- */
+
+function robotVoiceSound(){
+
+    initAudio();
+
+    robotSound();
+
+}
+
+
+/* ---------------------------------------------------------
+   ربط صوت البوابة
+--------------------------------------------------------- */
+
+const oldOpenGate =
+    openGate;
+
+
+openGate =
+    function(){
+
+        initAudio();
+
+        gateSound();
+
+        oldOpenGate();
+
+    };
+
+
+/* ---------------------------------------------------------
+   صوت عند دخول العالم
+--------------------------------------------------------- */
+
+const oldEnterWorld =
+    enterWorld;
+
+
+enterWorld =
+    function(){
+
+        initAudio();
+
+        startAmbience();
+
+        darkPulse();
+
+        oldEnterWorld();
+
+
+        setTimeout(
+            robotVoiceSound,
+            1200
+        );
+
+    };
+
+
+/* ---------------------------------------------------------
+   زر صامت للتحكم بالصوت
+--------------------------------------------------------- */
+
+const soundButton =
+    document.createElement(
+        "button"
+    );
+
+
+soundButton.innerHTML =
+    "◉ الصوت";
+
+
+soundButton.style.position =
+    "fixed";
+
+
+soundButton.style.left =
+    "20px";
+
+
+soundButton.style.bottom =
+    "20px";
+
+
+soundButton.style.zIndex =
+    "200";
+
+
+soundButton.style.padding =
+    "9px 15px";
+
+
+soundButton.style.background =
+    "rgba(0,0,0,.7)";
+
+
+soundButton.style.color =
+    "#555";
+
+
+soundButton.style.border =
+    "1px solid #292929";
+
+
+soundButton.style.cursor =
+    "pointer";
+
+
+document.body.appendChild(
+    soundButton
+);
+
+
+let soundEnabled =
+    true;
+
+
+soundButton.onclick =
+    function(){
+
+        initAudio();
+
+
+        soundEnabled =
+            !soundEnabled;
+
+
+        if(soundEnabled){
+
+            masterGain.gain.value =
+                .18;
+
+            soundButton.innerHTML =
+                "◉ الصوت";
+
+        }
+        else{
+
+            masterGain.gain.value =
+                0;
+
+            soundButton.innerHTML =
+                "○ صامت";
+
+        }
+
+    };
+
+
+/* ---------------------------------------------------------
+   تشغيل الصوت عند أول لمس للموقع
+--------------------------------------------------------- */
+
+document.addEventListener(
+    "pointerdown",
+    function(){
+
+        initAudio();
+
+    },
+    {
+        once:true
+    }
+);
 </script>
 
 </body>
