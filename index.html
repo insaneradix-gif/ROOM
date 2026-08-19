@@ -161,6 +161,49 @@ canvas{ position:fixed; inset:0; z-index:0; touch-action: none; }
     text-align: center; font-size: 16px; margin-bottom: 20px; outline: none;
 }
 
+/* غرفة عقاب لقطة الشاشة (العينان الحمراوان) */
+#screenshotRoom {
+    display: none; position: fixed; inset: 0; z-index: 999; background: #000000;
+    flex-direction: column; align-items: center; justify-content: center; text-align: center;
+}
+#screenshotRoom.active { display: flex; }
+
+.eyesContainer { display: flex; gap: 60px; margin-bottom: 30px; }
+.eye {
+    width: 45px; height: 22px; background: #ff003c; border-radius: 50%;
+    box-shadow: 0 0 30px #ff003c, inset 0 0 10px #000; position: relative;
+    animation: blinkEye 4s infinite, pulseGlow 2s infinite alternate;
+}
+.eye::after {
+    content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 8px; height: 16px; background: #000; border-radius: 50%;
+}
+@keyframes blinkEye {
+    0%, 96%, 100% { transform: scaleY(1); }
+    98% { transform: scaleY(0.05); }
+}
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 20px #ff003c; }
+    100% { box-shadow: 0 0 50px #ff003c, 0 0 10px #fff; }
+}
+
+.screenshotMessage {
+    color: #ff003c; font-size: 24px; font-weight: 900; letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(255, 0, 60, 0.8); margin-bottom: 30px;
+}
+
+#holdBox {
+    width: 50px; height: 50px; background: #050002; border: 2px solid #ff003c;
+    box-shadow: 0 0 15px rgba(255, 0, 60, 0.4); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #ff003c; font-weight: bold; font-size: 12px; transition: 0.1s;
+    user-select: none; touch-action: none; position: relative; overflow: hidden;
+}
+#holdBoxFill {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 0%;
+    background: #ff003c; opacity: 0.5; transition: height 0.1s linear;
+}
+
 /* واجهة اللعبة والتحكم */
 #game{ display:none; position:fixed; inset:0; z-index:10; }
 #game.active{ display:block; }
@@ -325,6 +368,19 @@ canvas{ position:fixed; inset:0; z-index:0; touch-action: none; }
         <div id="punishCounter" class="punishmentCounter">0</div>
         <div class="punishmentProgress"><div id="punishBar"></div></div>
         <div id="punishmentActionArea"></div>
+    </div>
+</div>
+
+<!-- غرفة عقاب لقطة الشاشة (شاشة سوداء وعينان حمراوان) -->
+<div id="screenshotRoom">
+    <div class="eyesContainer">
+        <div class="eye"></div>
+        <div class="eye"></div>
+    </div>
+    <div class="screenshotMessage">لا تكرر السكرين شوت</div>
+    <div id="holdBox">
+        <div id="holdBoxFill"></div>
+        <span id="holdText" style="z-index: 2;">15s</span>
     </div>
 </div>
 
@@ -697,6 +753,83 @@ function answerQuestion(index){
 }
 
 /* ==========================================================
+   نظام اكتشاف لقطة الشاشة (Screenshot Punishment)
+========================================================== */
+const screenshotRoom = document.getElementById("screenshotRoom");
+const holdBox = document.getElementById("holdBox");
+const holdBoxFill = document.getElementById("holdBoxFill");
+const holdText = document.getElementById("holdText");
+
+let screenshotHoldTimer = null;
+let holdProgress = 0; // بالسنتثانية (150 = 15 ثانية)
+
+function triggerScreenshotPunishment() {
+    wrongSound();
+    screenshotRoom.classList.add("active");
+    resetScreenshotHold();
+}
+
+function resetScreenshotHold() {
+    if(screenshotHoldTimer) clearInterval(screenshotHoldTimer);
+    holdProgress = 0;
+    holdBoxFill.style.height = "0%";
+    holdText.innerText = "15s";
+}
+
+function startScreenshotHold() {
+    resetScreenshotHold();
+    screenshotHoldTimer = setInterval(() => {
+        holdProgress += 1;
+        let remainingSeconds = Math.ceil((150 - holdProgress) / 10);
+        holdText.innerText = remainingSeconds + "s";
+        holdBoxFill.style.height = ((holdProgress / 150) * 100) + "%";
+        playTone(100 + holdProgress * 3, "sine", 0.05, 0.02);
+
+        if(holdProgress >= 150) {
+            clearInterval(screenshotHoldTimer);
+            correctSound();
+            screenshotRoom.classList.remove("active");
+        }
+    }, 100);
+}
+
+function stopScreenshotHold() {
+    if(holdProgress < 150) {
+        resetScreenshotHold();
+        wrongSound();
+    }
+}
+
+// أحداث الضغط للمربع
+holdBox.addEventListener("mousedown", startScreenshotHold);
+holdBox.addEventListener("mouseup", stopScreenshotHold);
+holdBox.addEventListener("mouseleave", stopScreenshotHold);
+
+holdBox.addEventListener("touchstart", (e) => { e.preventDefault(); startScreenshotHold(); });
+holdBox.addEventListener("touchend", (e) => { e.preventDefault(); stopScreenshotHold(); });
+
+// كشف اختصارات لقطة الشاشة على الأجهزة
+window.addEventListener("keyup", (e) => {
+    if (e.key === "PrintScreen" || e.code === "PrintScreen") {
+        triggerScreenshotPunishment();
+    }
+});
+
+window.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey && e.key === "p") || 
+        (e.metaKey && e.shiftKey && (e.key === "3" || e.key === "4" || e.key === "5"))) {
+        triggerScreenshotPunishment();
+    }
+});
+
+// كشف خروج الفوكس أو محاولة سكرين شوت في المتصفحات
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden && Math.random() < 0.5) { 
+        triggerScreenshotPunishment();
+    }
+});
+
+/* ==========================================================
    نظام العقاب الديناميكي
 ========================================================== */
 function triggerPunishment(){
@@ -969,7 +1102,7 @@ function setupTouchControls(){
 
     let isDragging = false, prevX = 0, prevY = 0;
     window.addEventListener("pointerdown", (e)=>{
-        if(e.target.closest("#hud") || e.target.closest("#intro") || e.target.closest("#sidebar") || e.target.closest("#sideMenuBtn")) return;
+        if(e.target.closest("#hud") || e.target.closest("#intro") || e.target.closest("#sidebar") || e.target.closest("#sideMenuBtn") || e.target.closest("#screenshotRoom")) return;
         isDragging = true; prevX = e.clientX; prevY = e.clientY;
     });
     window.addEventListener("pointermove", (e)=>{
@@ -1002,121 +1135,4 @@ function interact(){
 
     if(dKey < 3 && keyObject.visible){ takeKey(); return; }
     if(dSecret < 3 && secretObject.visible){ discoverSecret(); return; }
-    if(dGate < 4){ gateChallenge(); return; }
-}
-
-function takeKey(){
-    STATE.key = true; STATE.points += 500; keyObject.visible = false;
-    choiceSound();
-    robotText.innerHTML = "تم العثور على مفتاح البوابة." + "<br>" + "توجه إلى الأبواب الضخمة الآن.";
-    updateHUD();
-}
-
-function discoverSecret(){
-    STATE.secret = true; STATE.points += 1000; secretObject.visible = false;
-    correctSound();
-    robotText.innerHTML = "اكتشفت الشفرة السرية للعدم.";
-    updateHUD();
-}
-
-function gateChallenge(){
-    if(!STATE.key){
-        wrongSound();
-        robotText.innerHTML = "البوابة مغلقة!" + "<br>" + "ابحث عن الشفرة الكريستالية الحمراء في الفضاء.";
-        return;
-    }
-    choiceSound();
-    openPuzzle("اختبار البوابة النهائي", "ما هو الشيء الذي يحوي جميع أسرار الماضي ولكنه يجهل مستقبله؟", ["الذاكرة", "المقبرة", "الكتاب", "العقل"], 0);
-}
-
-function openPuzzle(title, description, choices, correct){
-    puzzleModal.classList.add("active");
-    document.getElementById("puzzleTitle").innerHTML = title;
-    document.getElementById("puzzleDescription").innerHTML = description;
-    const container = document.getElementById("puzzleAnswers");
-    container.innerHTML = "";
-    document.getElementById("puzzleResult").innerHTML = "";
-    
-    choices.forEach(function(choice,index){
-        const button = document.createElement("button");
-        button.className = "modalAnswer";
-        button.innerHTML = choice;
-        button.onclick = function(){
-            if(index === correct){ puzzleSuccess(); }else{ triggerPunishment(); }
-        };
-        container.appendChild(button);
-    });
-}
-
-function puzzleSuccess(){
-    correctSound();
-    STATE.puzzleSolved = true; STATE.points += 2000;
-    document.getElementById("puzzleResult").innerHTML = " تم فتح البوابة.";
-    setTimeout(function(){ puzzleModal.classList.remove("active"); openGate(); }, 1000);
-}
-
-function openGate(){
-    let progress = 0;
-    const timer = setInterval(function(){
-        progress += 0.03;
-        gate.userData.left.position.x = -2 - progress*2;
-        gate.userData.right.position.x = 2 + progress*2;
-        if(progress>=1){
-            clearInterval(timer);
-            STATE.stage = 2; updateHUD();
-            robotText.innerHTML = "عبور مكتمل. مرحباً بك في الأعماق.";
-        }
-    }, 30);
-}
-
-setInterval(function(){
-    if(!STATE.worldStarted) return;
-    const candidates = [keyObject, secretObject, gate];
-    let near = false;
-    candidates.forEach(function(object){
-        if(!object || !object.visible) return;
-        if(camera.position.distanceTo(object.position) < 3.5) near = true;
-    });
-    if(near) interactButton.classList.add("show"); else interactButton.classList.remove("show");
-}, 150);
-
-function resize(){
-    if(!camera || !renderer) return;
-    camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
-function animate(){
-    requestAnimationFrame(animate);
-    if(!scene) return;
-
-    const delta = clock.getDelta();
-    const speed = 4.0 * delta;
-
-    if(STATE.moveForward) camera.translateZ(-speed);
-    if(STATE.moveBackward) camera.translateZ(speed);
-    if(STATE.moveLeft) camera.translateX(-speed);
-    if(STATE.moveRight) camera.translateX(speed);
-    camera.position.y = 1.6;
-
-    if(monolith){
-        monolith.rotation.y += delta * 0.5;
-        const scale = 1 + Math.sin(clock.getElapsedTime() * 4) * 0.1;
-        monolithCore.scale.set(scale, scale, scale);
-    }
-
-    // حركة الشتاء والثلج المتساقط
-    if(currentTheme === 'winter' && particlesSystem) {
-        const positions = particlesSystem.geometry.attributes.position.array;
-        for(let i=1; i<positions.length; i+=3) {
-            positions[i] -= delta * 3;
-            if(positions[i] < 0) positions[i] = 10;
-        }
-        particlesSystem.geometry.attributes.position.needsUpdate = true;
-    }
-
-    renderer.render(scene, camera);
-}
-</script>
-</body>
-</html>
+    i
