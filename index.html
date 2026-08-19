@@ -17,6 +17,16 @@
 *{ box-sizing:border-box; margin:0; padding:0; user-select:none; }
 html, body{ width:100%; height:100%; overflow:hidden; background-color: var(--bg-black); color: var(--silver-text); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
 
+/* حماية ضد نسخ النصوص وتحديدها */
+body {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 canvas{ position:fixed; inset:0; z-index:0; touch-action: none; pointer-events: none; }
 
 #vignette{ 
@@ -129,7 +139,18 @@ canvas{ position:fixed; inset:0; z-index:0; touch-action: none; pointer-events: 
 .progressTrack { width: 100%; height: 4px; background: #110004; border: 1px solid var(--dark-border); margin-bottom: 25px; position: relative; }
 .progressBar { width: 0%; height: 100%; background: var(--blood-red); box-shadow: 0 0 10px var(--blood-red); transition: width 0.3s ease; }
 
-.questionCounter{ color: var(--blood-red); font-size:11px; letter-spacing:4px; margin-bottom:15px; font-weight: bold; }
+.questionHeader {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+}
+.questionCounter{ color: var(--blood-red); font-size:11px; letter-spacing:4px; font-weight: bold; }
+
+/* مؤقت السؤال لمنع التفكير الطويل أو تحليل الصور */
+.timerBox {
+    color: var(--blood-red); font-size: 13px; font-weight: bold; font-family: monospace;
+    border: 1px solid var(--blood-red); padding: 2px 8px; border-radius: 3px;
+    box-shadow: 0 0 8px var(--red-glow);
+}
+
 .question{ color:#fff; font-size: clamp(16px,3.8vw,24px); line-height:1.9; margin-bottom:30px; text-shadow: 0 0 10px rgba(0,0,0,0.9); }
 .answers{ display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:12px; width:min(700px,95%); margin:auto; }
 .answer{ 
@@ -160,50 +181,6 @@ canvas{ position:fixed; inset:0; z-index:0; touch-action: none; pointer-events: 
 .punishInput {
     width: 80%; padding: 12px; background: #000; border: 1px solid var(--blood-red); color: #fff;
     text-align: center; font-size: 16px; margin-bottom: 20px; outline: none;
-}
-
-/* غرفة عقاب لقطة الشاشة (العينان الحمراوان) */
-#screenshotRoom {
-    display: none; position: fixed; inset: 0; z-index: 999; background: #000000;
-    flex-direction: column; align-items: center; justify-content: center; text-align: center;
-    pointer-events: auto;
-}
-#screenshotRoom.active { display: flex; }
-
-.eyesContainer { display: flex; gap: 60px; margin-bottom: 30px; }
-.eye {
-    width: 45px; height: 22px; background: #ff003c; border-radius: 50%;
-    box-shadow: 0 0 30px #ff003c, inset 0 0 10px #000; position: relative;
-    animation: blinkEye 4s infinite, pulseGlow 2s infinite alternate;
-}
-.eye::after {
-    content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 8px; height: 16px; background: #000; border-radius: 50%;
-}
-@keyframes blinkEye {
-    0%, 96%, 100% { transform: scaleY(1); }
-    98% { transform: scaleY(0.05); }
-}
-@keyframes pulseGlow {
-    0% { box-shadow: 0 0 20px #ff003c; }
-    100% { box-shadow: 0 0 50px #ff003c, 0 0 10px #fff; }
-}
-
-.screenshotMessage {
-    color: #ff003c; font-size: 24px; font-weight: 900; letter-spacing: 4px;
-    text-shadow: 0 0 20px rgba(255, 0, 60, 0.8); margin-bottom: 30px;
-}
-
-#holdBox {
-    width: 50px; height: 50px; background: #050002; border: 2px solid #ff003c;
-    box-shadow: 0 0 15px rgba(255, 0, 60, 0.4); cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: #ff003c; font-weight: bold; font-size: 12px; transition: 0.1s;
-    user-select: none; touch-action: none; position: relative; overflow: hidden;
-}
-#holdBoxFill {
-    position: absolute; bottom: 0; left: 0; width: 100%; height: 0%;
-    background: #ff003c; opacity: 0.5; transition: height 0.1s linear;
 }
 
 /* واجهة اللعبة والتحكم */
@@ -262,7 +239,7 @@ canvas{ position:fixed; inset:0; z-index:0; touch-action: none; pointer-events: 
 }
 </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
 <audio id="bgPiano" loop preload="auto" src="https://ia801503.us.archive.org/15/items/CreepyPianoMusic/Creepy%20Piano.mp3"></audio>
 
@@ -337,7 +314,7 @@ canvas{ position:fixed; inset:0; z-index:0; touch-action: none; pointer-events: 
     <div class="introBox">
         <div class="warning"> SYSTEM PROTOCOL // ABYSSAL EVALUATION </div>
         <div class="title">THE LAST QUESTION</div>
-        <div class="subtitle">أجب على الأسئلة الـ 25 بالتتابع.<br>عند الخطأ ستخضع لعقاب تطهير، ثم تواصل من حيث توقفت.</div>
+        <div class="subtitle">أجب على الأسئلة الـ 25 بالتتابع.<br>لديك 12 ثانية لكل سؤال، وتخلط الإجابات والأسئلة عشوائياً لمجابهة الذكاء الاصطناعي.<br>عند الخطأ ستخضع لعقاب تطهير، ثم تواصل من حيث توقفت.</div>
         
         <div id="choiceScreen">
             <div class="choiceQuestion">اختر مسار عقلك قبل بدء التقييم:</div>
@@ -355,7 +332,10 @@ canvas{ position:fixed; inset:0; z-index:0; touch-action: none; pointer-events: 
 
         <div id="philosophy">
             <div class="progressTrack"><div id="progressBar" class="progressBar"></div></div>
-            <div id="questionCounter" class="questionCounter"></div>
+            <div class="questionHeader">
+                <div id="questionCounter" class="questionCounter"></div>
+                <div id="questionTimer" class="timerBox">12s</div>
+            </div>
             <div id="question" class="question"></div>
             <div id="answers" class="answers"></div>
         </div>
@@ -370,19 +350,6 @@ canvas{ position:fixed; inset:0; z-index:0; touch-action: none; pointer-events: 
         <div id="punishCounter" class="punishmentCounter">0</div>
         <div class="punishmentProgress"><div id="punishBar"></div></div>
         <div id="punishmentActionArea"></div>
-    </div>
-</div>
-
-<!-- غرفة عقاب لقطة الشاشة (شاشة سوداء وعينان حمراوان) -->
-<div id="screenshotRoom">
-    <div class="eyesContainer">
-        <div class="eye"></div>
-        <div class="eye"></div>
-    </div>
-    <div class="screenshotMessage">لا تكرر السكرين شوت</div>
-    <div id="holdBox">
-        <div id="holdBoxFill"></div>
-        <span id="holdText" style="z-index: 2;">15s</span>
     </div>
 </div>
 
@@ -426,7 +393,7 @@ canvas{ position:fixed; inset:0; z-index:0; touch-action: none; pointer-events: 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <script>
-const QUESTIONS = [
+const RAW_QUESTIONS = [
 { text: "1. إذا علم الكيان بموعد إعدامك الأبدي، هل تطلب منه كشف التاريخ أم تظل آمناً في جهلك؟", answers:[ "أريد التاريخ، المعرفة أقوى.", "الجهل أرحم من العذاب.", "الموت مجرد وهم برلماني.", "سأقتله قبل أن يخبرني." ], correct:1 },
 { text: "2. لو استُبدلت ذراتك بالكامل بمادة سوداء مظلمة وبقيت ذكرياتك... هل ما زلت أنت؟", answers:[ "نعم، الذكريات هي الروح.", "لا، أصبحت كائناً آخر.", "لا يوجد إنسان أصلاً.", "أنا الكيان الجديد." ], correct:2 },
 { text: "3. لتنقذ العالم من الفناء الكامل، هل أنت مستعد لتضحية بطفل بريء بيدك؟", answers:[ "نعم، المصلحة الكبرى تقتضي ذلك.", "لا، القتل المباشر جريمة.", "سأترك العالم يحترق.", "سأضحي بنفسي بدلاً عنه." ], correct:1 },
@@ -454,10 +421,13 @@ const QUESTIONS = [
 { text: "25. من هو السجين الحقيقي في هذا العالم؟", answers:[ "من يبني سجناً من أفكاره داخل عقله.", "من هو خلف قضبان الحديد.", "الحاكم والمحكوم.", "لا يوجد سجون." ], correct:0 }
 ];
 
+let QUESTIONS = [];
+
 const STATE = {
     path:null, questionIndex:0, points:0, mistakes:0, stage:1,
     key:false, secret:false, puzzleSolved:false, worldStarted:false,
     punishCount:0, punishTarget:50, punishType:0, holdTimer:null,
+    questionTimer: null, timeLeft: 12,
     moveForward:false, moveBackward:false, moveLeft:false, moveRight:false
 };
 
@@ -467,6 +437,7 @@ const philosophy = document.getElementById("philosophy");
 const question = document.getElementById("question");
 const answers = document.getElementById("answers");
 const questionCounter = document.getElementById("questionCounter");
+const questionTimer = document.getElementById("questionTimer");
 const progressBar = document.getElementById("progressBar");
 
 const punishmentRoom = document.getElementById("punishmentRoom");
@@ -704,15 +675,46 @@ function choiceSound(){ playTone(120, "sawtooth", 0.3, 0.08); triggerGlitchEffec
 function correctSound(){ playTone(350, "sine", 0.4, 0.1); }
 function wrongSound(){ playTone(50, "sawtooth", 1.0, 0.2); triggerGlitchEffect(); }
 
+// دالة خلط العناصر عشوائياً (Randomize Anti-AI)
+function shuffleArray(array) {
+    let arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+// تجهيز الأسئلة وخلط الإجابات لتعطيل الذكاء الاصطناعي
+function prepareAntiAiQuestions() {
+    let shuffledQ = shuffleArray(RAW_QUESTIONS);
+    QUESTIONS = shuffledQ.map((q, idx) => {
+        let originalCorrectText = q.answers[q.correct];
+        let shuffledAns = shuffleArray(q.answers);
+        let newCorrectIndex = shuffledAns.indexOf(originalCorrectText);
+        
+        // تنظيف رقم السؤال وإعادة الصياغة العشوائية للترتيب
+        let cleanText = q.text.replace(/^\d+\.\s*/, '');
+        return {
+            text: (idx + 1) + ". " + cleanText,
+            answers: shuffledAns,
+            correct: newCorrectIndex
+        };
+    });
+}
+
 function choosePath(path){
     choiceSound();
     STATE.path = path;
+    prepareAntiAiQuestions();
     choiceScreen.classList.add("hide");
     philosophy.classList.add("active");
     createNewQuestion();
 }
 
 function createNewQuestion(){
+    if (STATE.questionTimer) clearInterval(STATE.questionTimer);
+
     let total = QUESTIONS.length;
     let current = STATE.questionIndex;
     let selected = QUESTIONS[current];
@@ -730,9 +732,24 @@ function createNewQuestion(){
         button.onclick = function(){ answerQuestion(index); };
         answers.appendChild(button);
     });
+
+    // بدء مؤقت الـ 12 ثانية لتحديد وقت تفكير المستخدم
+    STATE.timeLeft = 12;
+    questionTimer.innerText = STATE.timeLeft + "s";
+    STATE.questionTimer = setInterval(() => {
+        STATE.timeLeft--;
+        questionTimer.innerText = STATE.timeLeft + "s";
+        if (STATE.timeLeft <= 0) {
+            clearInterval(STATE.questionTimer);
+            wrongSound();
+            triggerPunishment();
+        }
+    }, 1000);
 }
 
 function answerQuestion(index){
+    if (STATE.questionTimer) clearInterval(STATE.questionTimer);
+
     if(index !== STATE.currentQuestion.correct){
         wrongSound();
         triggerPunishment();
@@ -755,83 +772,11 @@ function answerQuestion(index){
 }
 
 /* ==========================================================
-   نظام اكتشاف لقطة الشاشة (Screenshot Punishment)
-========================================================== */
-const screenshotRoom = document.getElementById("screenshotRoom");
-const holdBox = document.getElementById("holdBox");
-const holdBoxFill = document.getElementById("holdBoxFill");
-const holdText = document.getElementById("holdText");
-
-let screenshotHoldTimer = null;
-let holdProgress = 0;
-
-function triggerScreenshotPunishment() {
-    wrongSound();
-    screenshotRoom.classList.add("active");
-    resetScreenshotHold();
-}
-
-function resetScreenshotHold() {
-    if(screenshotHoldTimer) clearInterval(screenshotHoldTimer);
-    holdProgress = 0;
-    holdBoxFill.style.height = "0%";
-    holdText.innerText = "15s";
-}
-
-function startScreenshotHold() {
-    resetScreenshotHold();
-    screenshotHoldTimer = setInterval(() => {
-        holdProgress += 1;
-        let remainingSeconds = Math.ceil((150 - holdProgress) / 10);
-        holdText.innerText = remainingSeconds + "s";
-        holdBoxFill.style.height = ((holdProgress / 150) * 100) + "%";
-        playTone(100 + holdProgress * 3, "sine", 0.05, 0.02);
-
-        if(holdProgress >= 150) {
-            clearInterval(screenshotHoldTimer);
-            correctSound();
-            screenshotRoom.classList.remove("active");
-        }
-    }, 100);
-}
-
-function stopScreenshotHold() {
-    if(holdProgress < 150) {
-        resetScreenshotHold();
-        wrongSound();
-    }
-}
-
-holdBox.addEventListener("mousedown", startScreenshotHold);
-holdBox.addEventListener("mouseup", stopScreenshotHold);
-holdBox.addEventListener("mouseleave", stopScreenshotHold);
-
-holdBox.addEventListener("touchstart", (e) => { e.preventDefault(); startScreenshotHold(); });
-holdBox.addEventListener("touchend", (e) => { e.preventDefault(); stopScreenshotHold(); });
-
-window.addEventListener("keyup", (e) => {
-    if (e.key === "PrintScreen" || e.code === "PrintScreen") {
-        triggerScreenshotPunishment();
-    }
-});
-
-window.addEventListener("keydown", (e) => {
-    if ((e.ctrlKey && e.key === "p") || 
-        (e.metaKey && e.shiftKey && (e.key === "3" || e.key === "4" || e.key === "5"))) {
-        triggerScreenshotPunishment();
-    }
-});
-
-document.addEventListener("visibilitychange", () => {
-    if (document.hidden && Math.random() < 0.5) { 
-        triggerScreenshotPunishment();
-    }
-});
-
-/* ==========================================================
    نظام العقاب الديناميكي
 ========================================================== */
 function triggerPunishment(){
+    if (STATE.questionTimer) clearInterval(STATE.questionTimer);
+    
     STATE.mistakes++;
     updateHUD();
 
@@ -1101,7 +1046,7 @@ function setupTouchControls(){
 
     let isDragging = false, prevX = 0, prevY = 0;
     window.addEventListener("pointerdown", (e)=>{
-        if(e.target.closest("#hud") || e.target.closest("#intro") || e.target.closest("#sidebar") || e.target.closest("#sideMenuBtn") || e.target.closest("#screenshotRoom") || e.target.closest("#punishmentRoom") || e.target.closest("#puzzleModal")) return;
+        if(e.target.closest("#hud") || e.target.closest("#intro") || e.target.closest("#sidebar") || e.target.closest("#sideMenuBtn") || e.target.closest("#punishmentRoom") || e.target.closest("#puzzleModal")) return;
         isDragging = true; prevX = e.clientX; prevY = e.clientY;
     });
     window.addEventListener("pointermove", (e)=>{
@@ -1133,4 +1078,55 @@ function animate(){
 
         const sideDir = new THREE.Vector3(-dir.z, 0, dir.x);
 
-        if(STATE.moveForward) cam
+        if(STATE.moveForward) camera.position.addScaledVector(dir, speed);
+        if(STATE.moveBackward) camera.position.addScaledVector(dir, -speed);
+        if(STATE.moveLeft) camera.position.addScaledVector(sideDir, -speed);
+        if(STATE.moveRight) camera.position.addScaledVector(sideDir, speed);
+
+        if(monolith) monolith.rotation.y += delta * 0.5;
+        if(monolithCore) monolithCore.position.y = 0.5 + Math.sin(clock.getElapsedTime()*3)*0.1;
+        if(keyObject && keyObject.visible) keyObject.rotation.y += delta * 2;
+        if(secretObject && secretObject.visible) secretObject.rotation.x += delta * 1.5;
+
+        // التحقق من إمكانية التفاعل
+        let canInteract = false;
+        if(keyObject && keyObject.visible && camera.position.distanceTo(keyObject.position) < 3) canInteract = true;
+        if(secretObject && secretObject.visible && camera.position.distanceTo(secretObject.position) < 3) canInteract = true;
+        if(gate && camera.position.distanceTo(gate.position) < 4) canInteract = true;
+
+        if(canInteract) interactButton.classList.add("show");
+        else interactButton.classList.remove("show");
+    }
+
+    if(renderer && scene && camera) {
+        renderer.render(scene, camera);
+    }
+}
+
+function enterWorld(){
+    STATE.worldStarted = true;
+    game.classList.add("active");
+    initWorld();
+    robotText.innerHTML = "اجتزت التقييم الفلسفي..." + "<br>" + "استكشف الفراغ واستخرج المفتاح لتفتيح البوابة.";
+}
+
+function updateHUD(){
+    pointsElement.innerHTML = STATE.points;
+    mistakesElement.innerHTML = STATE.mistakes;
+    stageName.innerHTML = "SECTOR 0" + STATE.stage;
+}
+
+function takeKey(){
+    STATE.key = true;
+    keyObject.visible = false;
+    correctSound();
+    robotText.innerHTML = "عثرت على المفتاح الكوني! ابحث عن البوابة الآن لتجاوز هذا القطاع.";
+}
+
+function discoverSecret(){
+    STATE.secret = true;
+    secretObject.visible = false;
+    correctSound();
+    STATE.points += 500;
+    updateHUD();
+    robotText.innerHTML = "كشفت سرًا مظلمًا قديمًا! زاد
