@@ -2,26 +2,23 @@
 <html lang="ar" dir="rtl">
 
 <head>
+
 <meta charset="UTF-8">
 
 <meta name="viewport"
       content="width=device-width,
-      initial-scale=1.0,
-      maximum-scale=1.0,
+      initial-scale=1,
+      maximum-scale=1,
       user-scalable=no">
 
-<title>THE UNKNOWN</title>
+<title>THE LAST QUESTION</title>
 
 <style>
 
-/* =====================================================
-   RESET
-===================================================== */
-
 *{
+    box-sizing:border-box;
     margin:0;
     padding:0;
-    box-sizing:border-box;
 }
 
 html,
@@ -30,578 +27,595 @@ body{
     height:100%;
     overflow:hidden;
     background:#000;
-    color:#ddd;
+    color:#aaa;
     font-family:
-        Arial,
         Tahoma,
+        Arial,
         sans-serif;
 }
 
-
-/* =====================================================
-   THREE.JS CANVAS
-===================================================== */
+body{
+    user-select:none;
+}
 
 canvas{
     position:fixed;
     inset:0;
-    width:100%;
-    height:100%;
-    display:block;
+    z-index:0;
 }
 
+/* ==============================
+   الخلفية
+============================== */
 
-/* =====================================================
-   GLOBAL UI
-===================================================== */
-
-#ui{
+#vignette{
     position:fixed;
     inset:0;
-    z-index:10;
+    z-index:5;
+    pointer-events:none;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            transparent 20%,
+            rgba(0,0,0,.35) 60%,
+            rgba(0,0,0,.95) 100%
+        );
+}
+
+/* ==============================
+   INTRO
+============================== */
+
+#intro{
+    position:fixed;
+    inset:0;
+    z-index:20;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            #111 0%,
+            #050505 35%,
+            #000 80%
+        );
+
+    transition:
+        opacity 1.5s,
+        transform 1.5s;
+}
+
+#intro.hide{
+    opacity:0;
+    transform:scale(1.08);
     pointer-events:none;
 }
 
+.introBox{
+    width:min(850px,92%);
+    text-align:center;
+}
 
-/* =====================================================
-   INTRO
-===================================================== */
+.warning{
+    color:#333;
+    font-size:10px;
+    letter-spacing:7px;
+    margin-bottom:35px;
+}
 
-#intro{
+.title{
+    font-size:
+        clamp(38px,10vw,90px);
 
-    position:absolute;
+    font-weight:100;
+    letter-spacing:12px;
+    color:#aaa;
+
+    text-shadow:
+        0 0 40px rgba(255,255,255,.08);
+
+    margin-bottom:25px;
+}
+
+.subtitle{
+    color:#555;
+    font-size:12px;
+    line-height:2;
+    margin-bottom:40px;
+}
+
+/* ==============================
+   الاختيار
+============================== */
+
+#choiceScreen{
+    display:none;
+}
+
+#choiceScreen.active{
+    display:block;
+}
+
+.choiceQuestion{
+    color:#888;
+    font-size:
+        clamp(20px,5vw,32px);
+
+    line-height:2;
+
+    margin-bottom:35px;
+}
+
+.choices{
+    display:flex;
+    gap:18px;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+
+.choice{
+    width:min(330px,90vw);
+    min-height:100px;
+
+    padding:22px;
+
+    color:#777;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.035),
+            rgba(255,255,255,.005)
+        );
+
+    border:1px solid #292929;
+
+    cursor:pointer;
+
+    transition:
+        .5s;
+
+    position:relative;
+    overflow:hidden;
+}
+
+.choice:hover{
+    color:#ddd;
+    border-color:#666;
+
+    transform:
+        translateY(-5px);
+
+    box-shadow:
+        0 20px 80px
+        rgba(0,0,0,.8);
+}
+
+.choiceNumber{
+    display:block;
+    color:#333;
+    font-size:10px;
+    margin-bottom:12px;
+}
+
+.choiceText{
+    font-size:15px;
+    line-height:1.8;
+}
+
+/* ==============================
+   سؤال فلسفي
+============================== */
+
+#philosophy{
+    display:none;
+}
+
+#philosophy.active{
+    display:block;
+}
+
+.questionCounter{
+    color:#333;
+    font-size:10px;
+    letter-spacing:4px;
+    margin-bottom:25px;
+}
+
+.question{
+    color:#aaa;
+
+    font-size:
+        clamp(19px,5vw,31px);
+
+    line-height:2;
+
+    margin-bottom:35px;
+}
+
+.answers{
+    display:grid;
+
+    grid-template-columns:
+        repeat(2,minmax(0,1fr));
+
+    gap:12px;
+
+    width:min(650px,95%);
+    margin:auto;
+}
+
+.answer{
+    padding:17px;
+
+    background:#070707;
+    border:1px solid #292929;
+
+    color:#777;
+
+    cursor:pointer;
+
+    transition:.35s;
+}
+
+.answer:hover{
+    color:#fff;
+    border-color:#777;
+    background:#101010;
+}
+
+/* ==============================
+   الطرد
+============================== */
+
+#banScreen{
+    display:none;
+
+    position:fixed;
     inset:0;
 
-    display:flex;
+    z-index:100;
 
     align-items:center;
     justify-content:center;
 
     text-align:center;
 
-    padding:25px;
-
-    pointer-events:auto;
-
     background:
         radial-gradient(
-            circle at center,
-            rgba(20,20,24,.25),
-            rgba(0,0,0,.88) 75%
+            circle,
+            #1a0000,
+            #050000 45%,
+            #000 90%
         );
-
-    transition:
-        opacity 2s,
-        visibility 2s;
-
 }
 
-
-#intro.hidden{
-
-    opacity:0;
-    visibility:hidden;
-
+#banScreen.active{
+    display:flex;
 }
 
-
-.introContent{
-
-    width:
-        min(700px,95%);
-
+.banBox{
+    width:min(650px,90%);
 }
 
+.banSymbol{
+    font-size:70px;
+    color:#5c0000;
 
-.warning{
-
-    color:#555;
-
-    font-size:10px;
-
-    letter-spacing:5px;
-
-    margin-bottom:35px;
+    margin-bottom:25px;
 
     animation:
-        warningBlink 4s infinite;
-
+        pulse 1.5s infinite;
 }
 
-
-@keyframes warningBlink{
-
-    0%,
-    40%,
-    60%,
-    100%{
+@keyframes pulse{
+    0%,100%{
+        opacity:.4;
+    }
+    50%{
         opacity:1;
     }
-
-    50%{
-        opacity:.15;
-    }
-
 }
 
-
-.introTitle{
-
+.banTitle{
+    color:#800000;
     font-size:
-        clamp(38px,10vw,80px);
-
-    font-weight:300;
-
-    letter-spacing:8px;
-
-    color:#ddd;
-
-    margin-bottom:30px;
-
-    text-shadow:
-        0 0 40px
-        rgba(255,255,255,.08);
-
+        clamp(30px,8vw,60px);
+    letter-spacing:6px;
+    margin-bottom:20px;
 }
 
-
-.introQuestion{
-
-    color:#999;
-
-    font-size:
-        clamp(18px,5vw,30px);
-
+.banText{
+    color:#555;
     line-height:2;
-
-    margin-bottom:45px;
-
+    font-size:13px;
 }
 
+/* ==============================
+   اللعبة
+============================== */
 
-.startButton{
+#game{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:10;
+}
 
-    pointer-events:auto;
+#game.active{
+    display:block;
+}
 
-    padding:
-        16px 38px;
+/* ==============================
+   HUD
+============================== */
 
-    color:#aaa;
+#hud{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+}
 
-    background:
-        rgba(255,255,255,.015);
+.topHud{
+    position:absolute;
+    top:20px;
+    left:20px;
+    right:20px;
 
-    border:
-        1px solid #444;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+}
 
-    cursor:pointer;
+.hudBlock{
+    color:#555;
+    font-size:10px;
+    line-height:1.8;
+}
 
+.hudValue{
+    color:#999;
     font-size:15px;
-
-    transition:
-        .5s;
-
 }
 
+.stage{
+    text-align:center;
+}
 
-.startButton:hover{
+.stageName{
+    color:#888;
+    font-size:12px;
+    letter-spacing:4px;
+}
 
-    color:#fff;
+.stageSub{
+    color:#333;
+    font-size:9px;
+    margin-top:5px;
+}
 
-    border-color:#aaa;
+/* ==============================
+   الروبوت
+============================== */
 
-    box-shadow:
-        0 0 40px
-        rgba(255,255,255,.08);
+#robotDialogue{
+    position:absolute;
+
+    left:50%;
+    bottom:25px;
 
     transform:
-        scale(1.05);
+        translateX(-50%);
 
+    width:min(600px,90%);
+
+    text-align:center;
 }
 
+.robotName{
+    color:#555;
+    font-size:9px;
+    letter-spacing:5px;
+    margin-bottom:8px;
+}
 
-/* =====================================================
-   GAME HUD
-===================================================== */
+.robotText{
+    color:#888;
+    font-size:13px;
+    line-height:1.8;
+}
 
-#gameHUD{
+/* ==============================
+   التفاعل
+============================== */
+
+#interact{
+    position:absolute;
+
+    left:50%;
+    bottom:100px;
+
+    transform:
+        translateX(-50%);
+
+    pointer-events:auto;
 
     display:none;
 
-    position:absolute;
-
-    inset:0;
-
-}
-
-
-#gameHUD.active{
-
-    display:block;
-
-}
-
-
-.gameTitle{
-
-    position:absolute;
-
-    top:25px;
-
-    left:50%;
-
-    transform:
-        translateX(-50%);
-
-    text-align:center;
-
-}
-
-
-.gameTitle .symbol{
-
-    color:#777;
-
-    font-size:22px;
-
-    animation:
-        symbolPulse 3s infinite;
-
-}
-
-
-@keyframes symbolPulse{
-
-    0%,
-    100%{
-        opacity:.25;
-    }
-
-    50%{
-        opacity:1;
-    }
-
-}
-
-
-.gameTitle h2{
-
-    margin-top:7px;
-
-    font-weight:300;
-
-    font-size:
-        clamp(17px,4vw,25px);
-
-    color:#999;
-
-}
-
-
-.gameTitle small{
-
-    display:block;
-
-    margin-top:7px;
-
-    color:#444;
-
-    font-size:10px;
-
-}
-
-
-/* =====================================================
-   OBJECT MESSAGE
-===================================================== */
-
-#message{
-
-    position:absolute;
-
-    top:50%;
-    left:50%;
-
-    transform:
-        translate(-50%,-50%);
-
-    width:
-        min(420px,88%);
-
-    padding:28px;
-
-    text-align:center;
+    padding:
+        13px 35px;
 
     background:
-        rgba(2,3,5,.76);
-
-    border:
-        1px solid
-        rgba(150,150,150,.2);
-
-    box-shadow:
-        0 0 70px
-        rgba(0,0,0,.95);
-
-    backdrop-filter:
-        blur(12px);
-
-    opacity:0;
-
-    visibility:hidden;
-
-    transition:
-        1s;
-
-    pointer-events:auto;
-
-}
-
-
-#message.show{
-
-    opacity:1;
-
-    visibility:visible;
-
-}
-
-
-.messageLabel{
-
-    color:#555;
-
-    letter-spacing:5px;
-
-    font-size:10px;
-
-    margin-bottom:20px;
-
-}
-
-
-#message h3{
-
-    color:#bbb;
-
-    font-weight:300;
-
-    font-size:25px;
-
-    line-height:1.8;
-
-}
-
-
-#message p{
-
-    color:#666;
-
-    line-height:2;
-
-    font-size:13px;
-
-    margin:
-        15px 0 25px;
-
-}
-
-
-.facebook{
-
-    display:inline-block;
-
-    text-decoration:none;
-
-    color:#aaa;
-
-    border:
-        1px solid #444;
-
-    padding:
-        13px 25px;
-
-    transition:.4s;
-
-}
-
-
-.facebook:hover{
-
-    color:#fff;
-
-    border-color:#aaa;
-
-    box-shadow:
-        0 0 30px
-        rgba(255,255,255,.1);
-
-}
-
-
-/* =====================================================
-   ROBOT DIALOG
-===================================================== */
-
-#robotUI{
-
-    position:absolute;
-
-    bottom:25px;
-
-    left:50%;
-
-    transform:
-        translateX(-50%);
-
-    width:
-        min(360px,90%);
-
-    text-align:center;
-
-}
-
-
-#robotName{
+        rgba(0,0,0,.85);
 
     color:#888;
 
-    font-size:10px;
+    border:1px solid #444;
 
-    letter-spacing:4px;
-
-    margin-bottom:6px;
-
+    cursor:pointer;
 }
 
-
-#robotSpeech{
-
-    color:#666;
-
-    font-size:12px;
-
-    line-height:1.8;
-
-    min-height:25px;
-
+#interact.show{
+    display:block;
 }
 
+/* ==============================
+   نافذة الألغاز
+============================== */
 
-/* =====================================================
-   HELP
-===================================================== */
-
-#help{
-
-    position:absolute;
-
-    bottom:15px;
-
-    right:18px;
-
-    color:#333;
-
-    font-size:9px;
-
-}
-
-
-/* =====================================================
-   CROSSHAIR
-===================================================== */
-
-#crosshair{
-
-    position:absolute;
-
-    left:50%;
-
-    top:50%;
-
-    width:12px;
-
-    height:12px;
-
-    transform:
-        translate(-50%,-50%);
-
-    opacity:.25;
-
-}
-
-
-#crosshair::before,
-#crosshair::after{
-
-    content:"";
-
-    position:absolute;
-
-    background:#aaa;
-
-}
-
-
-#crosshair::before{
-
-    width:12px;
-
-    height:1px;
-
-    top:5px;
-
-    left:0;
-
-}
-
-
-#crosshair::after{
-
-    width:1px;
-
-    height:12px;
-
-    left:5px;
-
-    top:0;
-
-}
-
-
-/* =====================================================
-   SECRET FLASH
-===================================================== */
-
-#flash{
-
+.modal{
     position:fixed;
-
     inset:0;
 
-    background:#fff;
+    z-index:70;
 
-    opacity:0;
+    display:none;
 
-    pointer-events:none;
+    align-items:center;
+    justify-content:center;
 
-    z-index:100;
+    background:
+        rgba(0,0,0,.93);
 
+    padding:20px;
 }
 
+.modal.active{
+    display:flex;
+}
 
-/* =====================================================
-   MOBILE
-===================================================== */
+.modalBox{
+    width:min(650px,95%);
+
+    background:
+        linear-gradient(
+            145deg,
+            #0b0c0e,
+            #030303
+        );
+
+    border:1px solid #292929;
+
+    padding:35px;
+
+    text-align:center;
+}
+
+.modalLabel{
+    color:#333;
+    font-size:9px;
+    letter-spacing:5px;
+    margin-bottom:20px;
+}
+
+.modalTitle{
+    color:#999;
+    font-size:22px;
+    line-height:1.8;
+    margin-bottom:25px;
+}
+
+.modalDescription{
+    color:#555;
+    font-size:12px;
+    line-height:2;
+    margin-bottom:25px;
+}
+
+.modalAnswers{
+    display:grid;
+    gap:10px;
+}
+
+.modalAnswer{
+    padding:15px;
+
+    background:#060606;
+
+    color:#777;
+
+    border:1px solid #292929;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.modalAnswer:hover{
+    color:#fff;
+    border-color:#777;
+}
+
+.modalResult{
+    min-height:30px;
+    color:#777;
+    margin-top:20px;
+    font-size:12px;
+}
+
+/* ==============================
+   شاشة النهاية
+============================== */
+
+#ending{
+    display:none;
+
+    position:fixed;
+    inset:0;
+
+    z-index:120;
+
+    background:#000;
+
+    align-items:center;
+    justify-content:center;
+
+    text-align:center;
+}
+
+#ending.active{
+    display:flex;
+}
+
+.endingBox{
+    width:min(700px,90%);
+}
+
+.endingTitle{
+    color:#999;
+    font-size:
+        clamp(30px,8vw,60px);
+
+    margin-bottom:25px;
+}
+
+.endingText{
+    color:#555;
+    line-height:2.2;
+    font-size:13px;
+}
+
+/* ==============================
+   الجوال
+============================== */
 
 @media(max-width:600px){
 
-    #help{
-        display:none;
+    .answers{
+        grid-template-columns:1fr;
     }
 
-    #message{
-        padding:22px;
+    .topHud{
+        top:12px;
+        left:12px;
+        right:12px;
+    }
+
+    .title{
+        letter-spacing:7px;
     }
 
 }
@@ -610,140 +624,212 @@ canvas{
 
 </head>
 
-
 <body>
 
 
-<!-- =====================================================
-     USER INTERFACE
-===================================================== -->
-
-<div id="ui">
+<div id="vignette"></div>
 
 
-    <!-- INTRO -->
+<!-- ============================================
+     شاشة البداية
+============================================= -->
 
-    <section id="intro">
+<div id="intro">
 
-        <div class="introContent">
+    <div class="introBox">
 
-            <div class="warning">
+        <div class="warning">
+            تحذير — لا يوجد رجوع
+        </div>
 
-                لا تدخل إذا كنت تخاف مما ستجد
+        <div class="title">
+            THE LAST QUESTION
+        </div>
 
-            </div>
+        <div class="subtitle">
+
+            هذا المكان لا يبحث عن الأذكياء.
+            <br>
+            إنه يبحث عن شخص يستطيع تحمل الإجابة.
+
+        </div>
 
 
-            <h1 class="introTitle">
+        <!-- الاختيار الأول -->
 
-                UNKNOWN
+        <div id="choiceScreen" class="active">
 
-            </h1>
+            <div class="choiceQuestion">
 
-
-            <div class="introQuestion">
-
-                إذا اختفى كل شيء من حولك...
+                قبل أن تبدأ...
                 <br>
-
-                هل ستظل تعرف من أنت؟
-
-            </div>
-
-
-            <button
-                class="startButton"
-                onclick="startGame()"
-            >
-
-                أدخل العالم
-
-            </button>
-
-        </div>
-
-    </section>
-
-
-
-    <!-- GAME -->
-
-    <div id="gameHUD">
-
-
-        <div class="gameTitle">
-
-            <div class="symbol">
-                ◉
-            </div>
-
-            <h2>
-                المكان الذي لم يكن يجب أن تجده
-            </h2>
-
-            <small>
-                المرحلة الأولى
-            </small>
-
-        </div>
-
-
-        <!-- MESSAGE -->
-
-        <div id="message">
-
-            <div class="messageLabel">
-
-                رسالة مجهولة
+                اختر الطريقة التي تريد أن تواجه بها الحقيقة.
 
             </div>
 
+            <div class="choices">
 
-            <h3>
+                <button
+                    class="choice"
+                    onclick="choosePath('mind')">
 
-                لقد وصلت...
+                    <span class="choiceNumber">
+                        01
+                    </span>
 
-            </h3>
+                    <span class="choiceText">
+                        أريد أن أفكر
+                        <br>
+                        حتى لو كانت الإجابة تؤلمني.
+                    </span>
 
-
-            <p>
-
-                إذا كنت تريد معرفة ما يوجد
-                خلف البوابة،
-
-                <br>
-
-                عليك أولًا أن تثبت أنك تستحق الدخول.
-
-            </p>
+                </button>
 
 
-            <a
-                class="facebook"
-                href="https://www.facebook.com/LONLY8"
-                target="_blank"
-            >
+                <button
+                    class="choice"
+                    onclick="choosePath('fear')">
 
-                أرسل هنا رسالة
+                    <span class="choiceNumber">
+                        02
+                    </span>
 
-            </a>
+                    <span class="choiceText">
+                        لا أريد الحقيقة.
+                        <br>
+                        أريد أن أعرف ماذا تخفي.
+                    </span>
+
+                </button>
+
+            </div>
 
         </div>
 
 
+        <!-- الأسئلة -->
 
-        <!-- ROBOT -->
+        <div id="philosophy">
 
-        <div id="robotUI">
+            <div
+                id="questionCounter"
+                class="questionCounter">
+            </div>
 
-            <div id="robotName">
+            <div
+                id="question"
+                class="question">
+            </div>
 
+            <div
+                id="answers"
+                class="answers">
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================
+     شاشة الطرد
+============================================= -->
+
+<div id="banScreen">
+
+    <div class="banBox">
+
+        <div class="banSymbol">
+            ⛓
+        </div>
+
+        <div class="banTitle">
+            مرفوض
+        </div>
+
+        <div class="banText">
+
+            إجابتك كشفت أنك لست مستعدًا.
+            <br><br>
+
+            تم إغلاق الباب.
+            <br>
+
+            لا تحاول العودة.
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================
+     اللعبة
+============================================= -->
+
+<div id="game">
+
+    <div id="hud">
+
+        <div class="topHud">
+
+            <div class="hudBlock">
+
+                النقاط
+
+                <div
+                    id="points"
+                    class="hudValue">
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stage">
+
+                <div
+                    id="stageName"
+                    class="stageName">
+                    البداية
+                </div>
+
+                <div
+                    id="stageSub"
+                    class="stageSub">
+                    لا تثق بأول شيء تراه
+                </div>
+
+            </div>
+
+
+            <div class="hudBlock">
+
+                المحاولات
+
+                <div
+                    id="mistakes"
+                    class="hudValue">
+                    0
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div id="robotDialogue">
+
+            <div class="robotName">
                 UNIT-07
-
             </div>
 
-
-            <div id="robotSpeech">
+            <div
+                id="robotText"
+                class="robotText">
 
                 ...
 
@@ -752,40 +838,495 @@ canvas{
         </div>
 
 
-        <div id="crosshair"></div>
+        <button
+            id="interact"
+            onclick="interact()">
 
+            تفاعل
 
-        <div id="help">
-
-            حرّك إصبعك لاستكشاف العالم
-
-        </div>
-
+        </button>
 
     </div>
 
 </div>
 
 
-<div id="flash"></div>
+<!-- ============================================
+     نافذة اللغز
+============================================= -->
+
+<div
+    id="puzzleModal"
+    class="modal">
+
+    <div class="modalBox">
+
+        <div class="modalLabel">
+            اختبار
+        </div>
+
+        <div
+            id="puzzleTitle"
+            class="modalTitle">
+        </div>
+
+        <div
+            id="puzzleDescription"
+            class="modalDescription">
+        </div>
+
+        <div
+            id="puzzleAnswers"
+            class="modalAnswers">
+        </div>
+
+        <div
+            id="puzzleResult"
+            class="modalResult">
+        </div>
+
+    </div>
+
+</div>
 
 
+<!-- ============================================
+     النهاية
+============================================= -->
 
-<!-- =====================================================
-     THREE.JS
-===================================================== -->
+<div id="ending">
+
+    <div class="endingBox">
+
+        <div
+            id="endingTitle"
+            class="endingTitle">
+        </div>
+
+        <div
+            id="endingText"
+            class="endingText">
+        </div>
+
+    </div>
+
+</div>
+
 
 <script src=
 "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
 </script>
 
 
-
 <script>
 
-/* =====================================================
-   VARIABLES
-===================================================== */
+/* ==========================================================
+   حالة اللعبة
+========================================================== */
+
+const STATE = {
+
+    path:null,
+
+    questionIndex:0,
+
+    points:0,
+
+    mistakes:0,
+
+    stage:1,
+
+    key:false,
+
+    secret:false,
+
+    puzzleSolved:false,
+
+    robotAwake:false,
+
+    worldStarted:false,
+
+    ended:false
+
+};
+
+
+/* ==========================================================
+   الأسئلة الفلسفية
+========================================================== */
+
+const QUESTIONS = [
+
+{
+
+    text:
+    "إذا كان بإمكانك معرفة يوم موتك بدقة،<br>" +
+    "هل ستكون معرفتك بذلك حرية... أم سجنًا؟",
+
+    answers:[
+        "الحرية، لأن المعرفة تمنحني القدرة على الاستعداد.",
+        "السجن، لأنني سأعيش كل يوم وأنا أعد الأيام.",
+        "لا فرق، فالموت سيحدث سواء عرفته أم لا.",
+        "لا يمكن أن أعرف."
+    ],
+
+    correct:1
+
+},
+
+{
+
+    text:
+    "إذا استبدلنا كل ذرة في جسدك تدريجيًا،<br>" +
+    "وبقيت ذكرياتك وشخصيتك كما هي...<br>" +
+    "هل ستظل أنت؟",
+
+    answers:[
+        "نعم، لأن الذاكرة هي أنا.",
+        "لا، لأن الجسد تغير بالكامل.",
+        "لا توجد إجابة يمكن إثباتها.",
+        "أنا الشخص الذي يقرر أنه أنا."
+    ],
+
+    correct:2
+
+},
+
+{
+
+    text:
+    "لو استطعت إنقاذ خمسة أشخاص<br>" +
+    "بالتسبب عمدًا في موت شخص واحد بريء،<br>" +
+    "هل تصبح التضحية صحيحة لأن العدد أكبر؟",
+
+    answers:[
+        "نعم، النتيجة أهم.",
+        "لا، قتل البريء يبقى خطأ.",
+        "الأمر يعتمد على هوية الأشخاص.",
+        "لا أستطيع اتخاذ القرار."
+    ],
+
+    correct:1
+
+},
+
+{
+
+    text:
+    "إذا كان كل قرار تتخذه نتيجة لسلسلة<br>" +
+    "من الأسباب التي حدثت قبل ولادتك،<br>" +
+    "فهل أنت حر فعلًا؟",
+
+    answers:[
+        "نعم، لأنني أختار.",
+        "لا، لأن كل شيء محدد مسبقًا.",
+        "ربما الحرية مجرد شعور.",
+        "السؤال نفسه يفترض وجود الحرية."
+    ],
+
+    correct:2
+
+},
+
+{
+
+    text:
+    "إذا كان العالم الذي تعيش فيه مجرد محاكاة،<br>" +
+    "وأخبرتك الآلة بذلك دون دليل...<br>" +
+    "هل ستصدقها؟",
+
+    answers:[
+        "نعم.",
+        "لا.",
+        "سأبحث عن دليل.",
+        "سأشك حتى في الدليل."
+    ],
+
+    correct:2
+
+},
+
+{
+
+    text:
+    "لو عُرض عليك أن تعيش حياة سعيدة بالكامل<br>" +
+    "لكنها كذبة لا تعرف أنها كذبة،<br>" +
+    "مقابل حياة حقيقية مليئة بالألم...",
+
+    answers:[
+        "أختار السعادة.",
+        "أختار الحقيقة.",
+        "لا توجد قيمة للحياة دون معرفة الحقيقة.",
+        "أرفض الاختيار."
+    ],
+
+    correct:1
+
+}
+
+];
+
+
+/* ==========================================================
+   العناصر
+========================================================== */
+
+const intro =
+    document.getElementById("intro");
+
+const choiceScreen =
+    document.getElementById("choiceScreen");
+
+const philosophy =
+    document.getElementById("philosophy");
+
+const question =
+    document.getElementById("question");
+
+const answers =
+    document.getElementById("answers");
+
+const questionCounter =
+    document.getElementById("questionCounter");
+
+const banScreen =
+    document.getElementById("banScreen");
+
+const game =
+    document.getElementById("game");
+
+const pointsElement =
+    document.getElementById("points");
+
+const mistakesElement =
+    document.getElementById("mistakes");
+
+const stageName =
+    document.getElementById("stageName");
+
+const stageSub =
+    document.getElementById("stageSub");
+
+const robotText =
+    document.getElementById("robotText");
+
+const interactButton =
+    document.getElementById("interact");
+
+const puzzleModal =
+    document.getElementById("puzzleModal");
+
+
+/* ==========================================================
+   التحقق من الحظر
+========================================================== */
+
+function checkBan(){
+
+    const banned =
+        localStorage.getItem(
+            "LAST_QUESTION_BANNED"
+        );
+
+    if(banned === "true"){
+
+        intro.style.display =
+            "none";
+
+        banScreen.classList.add(
+            "active"
+        );
+
+        return true;
+    }
+
+    return false;
+}
+
+
+/* ==========================================================
+   اختيار المسار
+========================================================== */
+
+function choosePath(path){
+
+    STATE.path =
+        path;
+
+    choiceScreen.classList.remove(
+        "active"
+    );
+
+    philosophy.classList.add(
+        "active"
+    );
+
+    createNewQuestion();
+
+}
+
+
+/* ==========================================================
+   اختيار سؤال جديد
+========================================================== */
+
+function createNewQuestion(){
+
+    let available =
+        QUESTIONS.filter(
+            (q,index)=>
+                index !==
+                STATE.questionIndex
+        );
+
+
+    let random =
+        Math.floor(
+            Math.random()*
+            available.length
+        );
+
+
+    let selected =
+        available[random];
+
+
+    STATE.currentQuestion =
+        selected;
+
+
+    STATE.questionIndex =
+        QUESTIONS.indexOf(
+            selected
+        );
+
+
+    questionCounter.innerHTML =
+        "اختبار " +
+        (STATE.stage) +
+        " / لا توجد إعادة";
+
+
+    question.innerHTML =
+        selected.text;
+
+
+    answers.innerHTML =
+        "";
+
+
+    selected.answers.forEach(
+        function(answer,index){
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.className =
+                "answer";
+
+            button.innerHTML =
+                answer;
+
+            button.onclick =
+                function(){
+
+                    answerQuestion(
+                        index
+                    );
+
+                };
+
+
+            answers.appendChild(
+                button
+            );
+
+        }
+    );
+
+}
+
+
+/* ==========================================================
+   الإجابة
+========================================================== */
+
+function answerQuestion(index){
+
+    const q =
+        STATE.currentQuestion;
+
+
+    if(index !== q.correct){
+
+        exile();
+
+        return;
+
+    }
+
+
+    STATE.points +=
+        500;
+
+
+    updateHUD();
+
+
+    philosophy.classList.remove(
+        "active"
+    );
+
+
+    intro.classList.add(
+        "hide"
+    );
+
+
+    setTimeout(
+        enterWorld,
+        1400
+    );
+
+}
+
+
+/* ==========================================================
+   الطرد
+========================================================== */
+
+function exile(){
+
+    STATE.mistakes++;
+
+
+    localStorage.setItem(
+        "LAST_QUESTION_BANNED",
+        "true"
+    );
+
+
+    philosophy.classList.remove(
+        "active"
+    );
+
+
+    intro.style.display =
+        "none";
+
+
+    banScreen.classList.add(
+        "active"
+    );
+
+}
+
+
+/* ==========================================================
+   THREE
+========================================================== */
 
 let scene;
 
@@ -795,33 +1336,23 @@ let renderer;
 
 let robot;
 
-let robotHead;
-
-let robotEyes = [];
-
 let gate;
 
-let gateLeft;
+let keyObject;
 
-let gateRight;
+let secretObject;
 
-let particles;
+let worldObjects=[];
 
 let clock =
     new THREE.Clock();
 
-let mouseX = 0;
 
-let mouseY = 0;
+/* ==========================================================
+   بناء العالم
+========================================================== */
 
-let gameStarted = false;
-
-
-/* =====================================================
-   CREATE WORLD
-===================================================== */
-
-function createWorld(){
+function initWorld(){
 
     scene =
         new THREE.Scene();
@@ -840,17 +1371,12 @@ function createWorld(){
         );
 
 
-    /* CAMERA */
-
     camera =
         new THREE.PerspectiveCamera(
-            55,
-
-            window.innerWidth /
+            60,
+            window.innerWidth/
             window.innerHeight,
-
             .1,
-
             100
         );
 
@@ -862,12 +1388,9 @@ function createWorld(){
     );
 
 
-    /* RENDERER */
-
     renderer =
         new THREE.WebGLRenderer({
-            antialias:true,
-            alpha:true
+            antialias:true
         });
 
 
@@ -885,17 +1408,15 @@ function createWorld(){
     );
 
 
-    document.body.prepend(
+    document.body.appendChild(
         renderer.domElement
     );
 
 
-    /* LIGHT */
-
     const ambient =
         new THREE.AmbientLight(
-            0x555555,
-            .5
+            0x444444,
+            .6
         );
 
 
@@ -904,39 +1425,39 @@ function createWorld(){
     );
 
 
-    const moonLight =
+    const moon =
         new THREE.DirectionalLight(
             0x999999,
-            1
+            1.3
         );
 
 
-    moonLight.position.set(
-        2,
-        7,
-        5
+    moon.position.set(
+        4,
+        8,
+        3
     );
 
 
     scene.add(
-        moonLight
+        moon
     );
 
 
-    /* WORLD */
-
     createGround();
-
-    createParticles();
 
     createGate();
 
     createRobot();
 
-    createPillars();
+    createKey();
 
+    createSecret();
 
-    /* EVENTS */
+    createRuins();
+
+    createParticles();
+
 
     window.addEventListener(
         "resize",
@@ -946,16 +1467,14 @@ function createWorld(){
 
     document.addEventListener(
         "mousemove",
-        mouseMove
+        cameraMouse
     );
 
 
     document.addEventListener(
         "touchmove",
-        touchMove,
-        {
-            passive:true
-        }
+        cameraTouch,
+        {passive:true}
     );
 
 
@@ -964,31 +1483,30 @@ function createWorld(){
 }
 
 
-/* =====================================================
-   GROUND
-===================================================== */
+/* ==========================================================
+   الأرض
+========================================================== */
 
 function createGround(){
 
-    const geometry =
-        new THREE.CircleGeometry(
-            22,
-            96
-        );
-
-
-    const material =
-        new THREE.MeshStandardMaterial({
-            color:0x07090b,
-            roughness:1,
-            metalness:.2
-        });
-
-
     const ground =
         new THREE.Mesh(
-            geometry,
-            material
+
+            new THREE.PlaneGeometry(
+                50,
+                50
+            ),
+
+            new THREE.MeshStandardMaterial({
+
+                color:0x07090b,
+
+                roughness:1,
+
+                metalness:.15
+
+            })
+
         );
 
 
@@ -1004,43 +1522,497 @@ function createGround(){
         ground
     );
 
+}
 
-    /* RINGS */
+
+/* ==========================================================
+   بوابة
+========================================================== */
+
+function createGate(){
+
+    gate =
+        new THREE.Group();
+
+
+    gate.position.set(
+        0,
+        1.5,
+        -5
+    );
+
+
+    const material =
+        new THREE.MeshStandardMaterial({
+
+            color:0x121417,
+
+            metalness:.8,
+
+            roughness:.3
+
+        });
+
+
+    const left =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                2,
+                5,
+                .5
+            ),
+
+            material
+
+        );
+
+
+    const right =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                2,
+                5,
+                .5
+            ),
+
+            material
+
+        );
+
+
+    const top =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                6,
+                1,
+                .5
+            ),
+
+            material
+
+        );
+
+
+    left.position.x =
+        -2;
+
+    right.position.x =
+        2;
+
+    top.position.y =
+        2;
+
+
+    gate.add(
+        left,
+        right,
+        top
+    );
+
+
+    gate.userData.left =
+        left;
+
+    gate.userData.right =
+        right;
+
+
+    scene.add(
+        gate
+    );
+
+
+    worldObjects.push(
+        gate
+    );
+
+}
+
+
+/* ==========================================================
+   الروبوت
+========================================================== */
+
+function createRobot(){
+
+    robot =
+        new THREE.Group();
+
+
+    robot.position.set(
+        0,
+        0,
+        4
+    );
+
+
+    const bodyMaterial =
+        new THREE.MeshStandardMaterial({
+
+            color:0x1b1e22,
+
+            metalness:.9,
+
+            roughness:.3
+
+        });
+
+
+    const body =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                .8,
+                1,
+                .65
+            ),
+
+            bodyMaterial
+
+        );
+
+
+    robot.add(
+        body
+    );
+
+
+    const head =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                .9,
+                .65,
+                .7
+            ),
+
+            bodyMaterial
+
+        );
+
+
+    head.position.y =
+        .85;
+
+
+    robot.add(
+        head
+    );
+
+
+    const eyeMaterial =
+        new THREE.MeshBasicMaterial({
+            color:0xdddddd
+        });
+
+
+    for(
+        let x=-.2;
+        x<=.2;
+        x+=.4
+    ){
+
+        const eye =
+            new THREE.Mesh(
+
+                new THREE.SphereGeometry(
+                    .08,
+                    16,
+                    16
+                ),
+
+                eyeMaterial.clone()
+
+            );
+
+
+        eye.position.set(
+            x,
+            .85,
+            -.36
+        );
+
+
+        robot.add(
+            eye
+        );
+
+    }
+
+
+    const legMaterial =
+        bodyMaterial.clone();
+
+
+    for(
+        let x=-.22;
+        x<=.22;
+        x+=.44
+    ){
+
+        const leg =
+            new THREE.Mesh(
+
+                new THREE.BoxGeometry(
+                    .2,
+                    .7,
+                    .25
+                ),
+
+                legMaterial
+
+            );
+
+
+        leg.position.set(
+            x,
+            -.75,
+            0
+        );
+
+
+        robot.add(
+            leg
+        );
+
+    }
+
+
+    scene.add(
+        robot
+    );
+
+}
+
+
+/* ==========================================================
+   المفتاح
+========================================================== */
+
+function createKey(){
+
+    keyObject =
+        new THREE.Group();
+
+
+    const ring =
+        new THREE.Mesh(
+
+            new THREE.TorusGeometry(
+                .22,
+                .05,
+                12,
+                32
+            ),
+
+            new THREE.MeshStandardMaterial({
+
+                color:0x999999,
+
+                metalness:1,
+
+                roughness:.2
+
+            })
+
+        );
+
+
+    const stem =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                .08,
+                .5,
+                .08
+            ),
+
+            new THREE.MeshStandardMaterial({
+
+                color:0x888888,
+
+                metalness:1
+
+            })
+
+        );
+
+
+    stem.rotation.z =
+        Math.PI/2;
+
+
+    stem.position.x =
+        .3;
+
+
+    keyObject.add(
+        ring,
+        stem
+    );
+
+
+    keyObject.position.set(
+        -3,
+        -.3,
+        0
+    );
+
+
+    scene.add(
+        keyObject
+    );
+
+
+    worldObjects.push(
+        keyObject
+    );
+
+}
+
+
+/* ==========================================================
+   السر
+========================================================== */
+
+function createSecret(){
+
+    secretObject =
+        new THREE.Group();
+
+
+    const outer =
+        new THREE.Mesh(
+
+            new THREE.TorusGeometry(
+                .4,
+                .025,
+                10,
+                50
+            ),
+
+            new THREE.MeshBasicMaterial({
+                color:0x888888
+            })
+
+        );
+
+
+    const core =
+        new THREE.Mesh(
+
+            new THREE.SphereGeometry(
+                .09,
+                16,
+                16
+            ),
+
+            new THREE.MeshBasicMaterial({
+                color:0xdddddd
+            })
+
+        );
+
+
+    secretObject.add(
+        outer,
+        core
+    );
+
+
+    secretObject.position.set(
+        3,
+        1.1,
+        -1
+    );
+
+
+    scene.add(
+        secretObject
+    );
+
+
+    worldObjects.push(
+        secretObject
+    );
+
+}
+
+
+/* ==========================================================
+   أطلال
+========================================================== */
+
+function createRuins(){
 
     for(
         let i=0;
-        i<10;
+        i<25;
         i++
     ){
 
-        const ring =
+        const h =
+            1+
+            Math.random()*4;
+
+
+        const object =
             new THREE.Mesh(
 
-                new THREE.RingGeometry(
-                    1+i*.8,
-                    1.015+i*.8,
-                    96
+                new THREE.BoxGeometry(
+                    .6+
+                    Math.random(),
+                    h,
+                    .6+
+                    Math.random()
                 ),
 
-                new THREE.MeshBasicMaterial({
-                    color:0x1b1e22,
-                    transparent:true,
-                    opacity:.25
+                new THREE.MeshStandardMaterial({
+
+                    color:
+                        0x080a0c,
+
+                    roughness:.9,
+
+                    metalness:.4
+
                 })
 
             );
 
 
-        ring.rotation.x =
-            -Math.PI/2;
+        const angle =
+            Math.random()*
+            Math.PI*2;
 
 
-        ring.position.y =
-            -.985;
+        const radius =
+            7+
+            Math.random()*15;
+
+
+        object.position.set(
+
+            Math.cos(angle)*
+            radius,
+
+            h/2-1,
+
+            Math.sin(angle)*
+            radius
+
+        );
+
+
+        object.rotation.y =
+            Math.random()*Math.PI;
 
 
         scene.add(
-            ring
+            object
         );
 
     }
@@ -1048,9 +2020,9 @@ function createGround(){
 }
 
 
-/* =====================================================
-   PARTICLES
-===================================================== */
+/* ==========================================================
+   الجزيئات
+========================================================== */
 
 function createParticles(){
 
@@ -1058,23 +2030,19 @@ function createParticles(){
         new THREE.BufferGeometry();
 
 
-    const positions=[];
+    const data=[];
 
 
     for(
         let i=0;
-        i<1200;
+        i<1500;
         i++
     ){
 
-        positions.push(
-
+        data.push(
             (Math.random()-.5)*40,
-
-            Math.random()*18-2,
-
+            Math.random()*15-2,
             (Math.random()-.5)*40
-
         );
 
     }
@@ -1085,7 +2053,7 @@ function createParticles(){
         "position",
 
         new THREE.Float32BufferAttribute(
-            positions,
+            data,
             3
         )
 
@@ -1101,12 +2069,12 @@ function createParticles(){
 
             transparent:true,
 
-            opacity:.55
+            opacity:.45
 
         });
 
 
-    particles =
+    const points =
         new THREE.Points(
             geometry,
             material
@@ -1114,701 +2082,776 @@ function createParticles(){
 
 
     scene.add(
-        particles
+        points
     );
 
 }
 
 
-/* =====================================================
-   PILLARS
-===================================================== */
+/* ==========================================================
+   دخول العالم
+========================================================== */
 
-function createPillars(){
+function enterWorld(){
 
-    for(
-        let i=0;
-        i<18;
-        i++
+    STATE.worldStarted =
+        true;
+
+
+    game.classList.add(
+        "active"
+    );
+
+
+    initWorld();
+
+
+    robotText.innerHTML =
+        "أهلًا بك..." +
+        "<br>" +
+        "كنت أتساءل متى ستصل.";
+
+}
+
+
+/* ==========================================================
+   HUD
+========================================================== */
+
+function updateHUD(){
+
+    pointsElement.innerHTML =
+        STATE.points;
+
+
+    mistakesElement.innerHTML =
+        STATE.mistakes;
+
+
+    stageName.innerHTML =
+        "المرحلة " +
+        STATE.stage;
+
+}
+
+
+/* ==========================================================
+   التفاعل
+========================================================== */
+
+function interact(){
+
+    if(!STATE.worldStarted)
+        return;
+
+
+    const distanceToKey =
+        camera.position.distanceTo(
+            keyObject.position
+        );
+
+
+    const distanceToSecret =
+        camera.position.distanceTo(
+            secretObject.position
+        );
+
+
+    const distanceToGate =
+        camera.position.distanceTo(
+            gate.position
+        );
+
+
+    if(
+        distanceToKey < 4 &&
+        keyObject.visible
     ){
 
-        const height =
-            2 +
-            Math.random()*5;
+        takeKey();
+
+        return;
+
+    }
 
 
-        const geometry =
-            new THREE.BoxGeometry(
-                .7,
-                height,
-                .7
-            );
+    if(
+        distanceToSecret < 4 &&
+        secretObject.visible
+    ){
+
+        discoverSecret();
+
+        return;
+
+    }
 
 
-        const material =
-            new THREE.MeshStandardMaterial({
+    if(
+        distanceToGate < 5
+    ){
 
-                color:0x0b0d10,
+        gateChallenge();
 
-                roughness:.8,
-
-                metalness:.5
-
-            });
-
-
-        const pillar =
-            new THREE.Mesh(
-                geometry,
-                material
-            );
-
-
-        const angle =
-            Math.random()*
-            Math.PI*2;
-
-
-        const radius =
-            7+
-            Math.random()*10;
-
-
-        pillar.position.set(
-
-            Math.cos(angle)*radius,
-
-            height/2-1,
-
-            Math.sin(angle)*radius
-
-        );
-
-
-        pillar.rotation.y =
-            Math.random()*Math.PI;
-
-
-        scene.add(
-            pillar
-        );
+        return;
 
     }
 
 }
 
 
-/* =====================================================
-   GATE
-===================================================== */
+/* ==========================================================
+   أخذ المفتاح
+========================================================== */
 
-function createGate(){
+function takeKey(){
 
-    gate =
-        new THREE.Group();
-
-
-    gate.position.set(
-        0,
-        2,
-        -3
-    );
+    STATE.key =
+        true;
 
 
-    /* FRAME */
-
-    const frameMaterial =
-        new THREE.MeshStandardMaterial({
-
-            color:0x111419,
-
-            metalness:.8,
-
-            roughness:.35
-
-        });
+    STATE.points +=
+        250;
 
 
-    const sideGeometry =
-        new THREE.BoxGeometry(
-            .7,
-            5,
-            .8
-        );
+    keyObject.visible =
+        false;
 
 
-    const topGeometry =
-        new THREE.BoxGeometry(
-            5,
-            .7,
-            .8
-        );
+    robotText.innerHTML =
+        "أخذت المفتاح..." +
+        "<br>" +
+        "لكن لماذا أشعر أنك لم تكن تبحث عنه؟";
 
 
-    const left =
-        new THREE.Mesh(
-            sideGeometry,
-            frameMaterial
-        );
+    updateHUD();
 
 
-    const right =
-        new THREE.Mesh(
-            sideGeometry,
-            frameMaterial
-        );
-
-
-    const top =
-        new THREE.Mesh(
-            topGeometry,
-            frameMaterial
-        );
-
-
-    left.position.x=-2.15;
-
-    right.position.x=2.15;
-
-    top.position.y=2.15;
-
-
-    gate.add(
-        left,
-        right,
-        top
-    );
-
-
-    /* DOORS */
-
-    const doorGeometry =
-        new THREE.BoxGeometry(
-            1.9,
-            4.3,
-            .35
-        );
-
-
-    const doorMaterial =
-        new THREE.MeshStandardMaterial({
-
-            color:0x080a0d,
-
-            metalness:.7,
-
-            roughness:.4
-
-        });
-
-
-    gateLeft =
-        new THREE.Mesh(
-            doorGeometry,
-            doorMaterial
-        );
-
-
-    gateRight =
-        new THREE.Mesh(
-            doorGeometry,
-            doorMaterial
-        );
-
-
-    gateLeft.position.set(
-        -1,
-        0,
-        0
-    );
-
-
-    gateRight.position.set(
-        1,
-        0,
-        0
-    );
-
-
-    gate.add(
-        gateLeft,
-        gateRight
-    );
-
-
-    /* SYMBOL */
-
-    const symbolGeometry =
-        new THREE.TorusGeometry(
-            .65,
-            .035,
-            12,
-            64
-        );
-
-
-    const symbolMaterial =
-        new THREE.MeshBasicMaterial({
-            color:0x777777
-        });
-
-
-    const symbol =
-        new THREE.Mesh(
-            symbolGeometry,
-            symbolMaterial
-        );
-
-
-    symbol.position.z =
-        -.25;
-
-
-    gate.add(
-        symbol
-    );
-
-
-    scene.add(
-        gate
+    interactButton.classList.remove(
+        "show"
     );
 
 }
 
 
-/* =====================================================
-   ROBOT
-===================================================== */
+/* ==========================================================
+   السر
+========================================================== */
 
-function createRobot(){
+function discoverSecret(){
 
-    robot =
-        new THREE.Group();
+    STATE.secret =
+        true;
 
 
-    robot.position.set(
-        0,
-        -.1,
-        3
-    );
+    STATE.points +=
+        500;
 
 
-    /* BODY */
+    secretObject.visible =
+        false;
 
-    const body =
-        new THREE.Mesh(
 
-            new THREE.BoxGeometry(
-                .8,
-                1,
-                .65
-            ),
+    robotText.innerHTML =
+        "أنت وجدته." +
+        "<br>" +
+        "لا تخبرني بما رأيت.";
 
-            new THREE.MeshStandardMaterial({
 
-                color:0x181c20,
+    updateHUD();
 
-                metalness:.8,
+}
 
-                roughness:.3
 
-            })
+/* ==========================================================
+   تحدي البوابة
+========================================================== */
 
-        );
+function gateChallenge(){
 
+    if(!STATE.key){
 
-    robot.add(
-        body
-    );
+        robotText.innerHTML =
+            "البوابة لا تقبل الفراغ." +
+            "<br>" +
+            "ابحث.";
 
+        return;
 
-    /* HEAD */
+    }
 
-    robotHead =
-        new THREE.Mesh(
 
-            new THREE.BoxGeometry(
-                .9,
-                .65,
-                .7
-            ),
+    openPuzzle(
 
-            new THREE.MeshStandardMaterial({
+        "المرحلة الثانية",
 
-                color:0x24282d,
+        "ما الشيء الذي يزداد كلما أخذت منه؟",
 
-                metalness:.8,
+        [
+            "العمر",
+            "الحفرة",
+            "الخوف",
+            "المعرفة"
+        ],
 
-                roughness:.25
+        1
 
-            })
-
-        );
-
-
-    robotHead.position.y =
-        .8;
-
-
-    robot.add(
-        robotHead
-    );
-
-
-    /* EYES */
-
-    const eyeGeometry =
-        new THREE.SphereGeometry(
-            .09,
-            16,
-            16
-        );
-
-
-    const eyeMaterial =
-        new THREE.MeshBasicMaterial({
-            color:0xcccccc
-        });
-
-
-    const eyeL =
-        new THREE.Mesh(
-            eyeGeometry,
-            eyeMaterial.clone()
-        );
-
-
-    const eyeR =
-        new THREE.Mesh(
-            eyeGeometry,
-            eyeMaterial.clone()
-        );
-
-
-    eyeL.position.set(
-        -.2,
-        .82,
-        -.36
-    );
-
-
-    eyeR.position.set(
-        .2,
-        .82,
-        -.36
-    );
-
-
-    robot.add(
-        eyeL,
-        eyeR
-    );
-
-
-    robotEyes=[
-        eyeL,
-        eyeR
-    ];
-
-
-    /* ANTENNA */
-
-    const antenna =
-        new THREE.Mesh(
-
-            new THREE.CylinderGeometry(
-                .025,
-                .025,
-                .45,
-                10
-            ),
-
-            new THREE.MeshStandardMaterial({
-                color:0x44484d,
-                metalness:.8
-            })
-
-        );
-
-
-    antenna.position.y =
-        1.35;
-
-
-    robot.add(
-        antenna
-    );
-
-
-    /* ANTENNA LIGHT */
-
-    const light =
-        new THREE.Mesh(
-
-            new THREE.SphereGeometry(
-                .07,
-                12,
-                12
-            ),
-
-            new THREE.MeshBasicMaterial({
-                color:0xaaaaaa
-            })
-
-        );
-
-
-    light.position.y =
-        1.58;
-
-
-    robot.add(
-        light
-    );
-
-
-    /* LEGS */
-
-    const legMaterial =
-        new THREE.MeshStandardMaterial({
-
-            color:0x101215,
-
-            metalness:.8,
-
-            roughness:.35
-
-        });
-
-
-    const legGeometry =
-        new THREE.BoxGeometry(
-            .22,
-            .65,
-            .3
-        );
-
-
-    const legL =
-        new THREE.Mesh(
-            legGeometry,
-            legMaterial
-        );
-
-
-    const legR =
-        new THREE.Mesh(
-            legGeometry,
-            legMaterial
-        );
-
-
-    legL.position.set(
-        -.22,
-        -.8,
-        0
-    );
-
-
-    legR.position.set(
-        .22,
-        -.8,
-        0
-    );
-
-
-    robot.add(
-        legL,
-        legR
-    );
-
-
-    /* ARMS */
-
-    const armGeometry =
-        new THREE.BoxGeometry(
-            .18,
-            .7,
-            .22
-        );
-
-
-    const armL =
-        new THREE.Mesh(
-            armGeometry,
-            legMaterial
-        );
-
-
-    const armR =
-        new THREE.Mesh(
-            armGeometry,
-            legMaterial
-        );
-
-
-    armL.position.set(
-        -.55,
-        -.05,
-        0
-    );
-
-
-    armR.position.set(
-        .55,
-        -.05,
-        0
-    );
-
-
-    robot.add(
-        armL,
-        armR
-    );
-
-
-    /* RING */
-
-    const ring =
-        new THREE.Mesh(
-
-            new THREE.TorusGeometry(
-                1,
-                .012,
-                8,
-                64
-            ),
-
-            new THREE.MeshBasicMaterial({
-
-                color:0x555555,
-
-                transparent:true,
-
-                opacity:.35
-
-            })
-
-        );
-
-
-    ring.rotation.x =
-        Math.PI/2;
-
-
-    ring.position.y =
-        -1;
-
-
-    robot.add(
-        ring
-    );
-
-
-    scene.add(
-        robot
     );
 
 }
 
 
-/* =====================================================
-   START GAME
-===================================================== */
+/* ==========================================================
+   نظام الألغاز
+========================================================== */
 
-function startGame(){
+function openPuzzle(
+    title,
+    description,
+    choices,
+    correct
+){
 
-    gameStarted=true;
+    puzzleModal.classList.add(
+        "active"
+    );
 
 
     document
-        .getElementById("intro")
-        .classList.add("hidden");
+        .getElementById(
+            "puzzleTitle"
+        )
+        .innerHTML =
+        title;
+
+
+    document
+        .getElementById(
+            "puzzleDescription"
+        )
+        .innerHTML =
+        description;
+
+
+    const container =
+        document
+            .getElementById(
+                "puzzleAnswers"
+            );
+
+
+    container.innerHTML =
+        "";
+
+
+    document
+        .getElementById(
+            "puzzleResult"
+        )
+        .innerHTML =
+        "";
+
+
+    choices.forEach(
+        function(choice,index){
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.className =
+                "modalAnswer";
+
+
+            button.innerHTML =
+                choice;
+
+
+            button.onclick =
+                function(){
+
+                    if(
+                        index ===
+                        correct
+                    ){
+
+                        puzzleSuccess();
+
+                    }
+                    else{
+
+                        puzzleFailure();
+
+                    }
+
+                };
+
+
+            container.appendChild(
+                button
+            );
+
+        }
+    );
+
+}
+
+
+/* ==========================================================
+   نجاح اللغز
+========================================================== */
+
+function puzzleSuccess(){
+
+    STATE.puzzleSolved =
+        true;
+
+
+    STATE.points +=
+        750;
+
+
+    document
+        .getElementById(
+            "puzzleResult"
+        )
+        .innerHTML =
+        "صحيح.";
 
 
     setTimeout(
         function(){
 
-            document
-                .getElementById("gameHUD")
-                .classList.add("active");
+            puzzleModal.classList.remove(
+                "active"
+            );
 
 
-            document
-                .getElementById("message")
-                .classList.add("show");
-
-
-            document
-                .getElementById("robotSpeech")
-                .innerHTML=
-
-                "مرحبًا...<br>"+
-                "أنا UNIT-07.";
+            openGate();
 
 
         },
-
-        1800
+        1000
     );
 
 }
 
 
-/* =====================================================
-   MOUSE
-===================================================== */
+/* ==========================================================
+   فشل اللغز
+========================================================== */
 
-function mouseMove(event){
+function puzzleFailure(){
 
-    mouseX=
-        event.clientX/
-        window.innerWidth-
-        .5;
+    STATE.mistakes++;
 
 
-    mouseY=
-        event.clientY/
-        window.innerHeight-
-        .5;
+    updateHUD();
+
+
+    puzzleModal.classList.remove(
+        "active"
+    );
+
+
+    robotText.innerHTML =
+        "خطأ." +
+        "<br>" +
+        "لقد أعطيتني سببًا جديدًا لطردك.";
+
+
+    setTimeout(
+        exileFromWorld,
+        1200
+    );
 
 }
 
 
-/* =====================================================
-   TOUCH
-===================================================== */
+/* ==========================================================
+   طرد من العالم
+========================================================== */
 
-function touchMove(event){
+function exileFromWorld(){
+
+    localStorage.setItem(
+        "LAST_QUESTION_BANNED",
+        "true"
+    );
+
+
+    game.classList.remove(
+        "active"
+    );
+
+
+    banScreen.classList.add(
+        "active"
+    );
+
+}
+
+
+/* ==========================================================
+   فتح البوابة
+========================================================== */
+
+function openGate(){
 
     if(
-        !event.touches ||
-        !event.touches.length
+        STATE.gateOpened
     )
         return;
 
 
-    mouseX=
-        event.touches[0].clientX/
+    STATE.gateOpened =
+        true;
+
+
+    robotText.innerHTML =
+        "الباب مفتوح..." +
+        "<br>" +
+        "الآن يبدأ الجزء الحقيقي.";
+
+
+    let progress=0;
+
+
+    const timer =
+        setInterval(
+            function(){
+
+                progress +=
+                    .025;
+
+
+                gate.userData.left.position.x =
+                    -2 -
+                    progress*2;
+
+
+                gate.userData.right.position.x =
+                    2 +
+                    progress*2;
+
+
+                if(progress>=1){
+
+                    clearInterval(
+                        timer
+                    );
+
+
+                    STATE.stage =
+                        3;
+
+
+                    updateHUD();
+
+
+                    setTimeout(
+                        nextWorldChallenge,
+                        1500
+                    );
+
+                }
+
+            },
+            30
+        );
+
+}
+
+
+/* ==========================================================
+   التحدي التالي
+========================================================== */
+
+function nextWorldChallenge(){
+
+    robotText.innerHTML =
+        "توقّف." +
+        "<br>" +
+        "هل تسمع ذلك؟";
+
+
+    setTimeout(
+        function(){
+
+            robotText.innerHTML =
+                "هناك شيء في الممر." +
+                "<br>" +
+                "ولا أعتقد أنه أنا.";
+
+        },
+        3500
+    );
+
+
+    STATE.points +=
+        1000;
+
+
+    updateHUD();
+
+}
+
+
+/* ==========================================================
+   تحكم الكاميرا
+========================================================== */
+
+let mouseX=0;
+
+let mouseY=0;
+
+
+function cameraMouse(e){
+
+    mouseX =
+        e.clientX/
         window.innerWidth-
         .5;
 
 
-    mouseY=
-        event.touches[0].clientY/
+    mouseY =
+        e.clientY/
         window.innerHeight-
         .5;
 
 }
 
 
-/* =====================================================
-   RESIZE
-===================================================== */
+function cameraTouch(e){
+
+    if(
+        !e.touches.length
+    )
+        return;
+
+
+    mouseX =
+        e.touches[0].clientX/
+        window.innerWidth-
+        .5;
+
+
+    mouseY =
+        e.touches[0].clientY/
+        window.innerHeight-
+        .5;
+
+}
+
+
+/* ==========================================================
+   تحديث زر التفاعل
+========================================================== */
+
+setInterval(
+    function(){
+
+        if(!STATE.worldStarted)
+            return;
+
+
+        const candidates=[
+            keyObject,
+            secretObject,
+            gate
+        ];
+
+
+        let near=false;
+
+
+        candidates.forEach(
+            function(object){
+
+                if(
+                    !object ||
+                    !object.visible
+                )
+                    return;
+
+
+                const distance =
+                    camera.position.distanceTo(
+                        object.position
+                    );
+
+
+                if(
+                    distance < 4.5
+                ){
+
+                    near=true;
+
+                }
+
+            }
+        );
+
+
+        if(near){
+
+            interactButton.classList.add(
+                "show"
+            );
+
+        }
+        else{
+
+            interactButton.classList.remove(
+                "show"
+            );
+
+        }
+
+    },
+    150
+);
+
+
+/* ==========================================================
+   تحديث الروبوت
+========================================================== */
+
+function updateRobot(){
+
+    if(!robot)
+        return;
+
+
+    const time =
+        clock.getElapsedTime();
+
+
+    robot.position.y =
+        Math.sin(time*2)*.035;
+
+
+    robot.rotation.y =
+        Math.sin(time*.5)*.15;
+
+
+    if(
+        STATE.gateOpened
+    ){
+
+        robot.position.x +=
+            (
+                camera.position.x -
+                robot.position.x
+            )*.002;
+
+    }
+
+}
+
+
+/* ==========================================================
+   تغيير الجو
+========================================================== */
+
+function updateAtmosphere(){
+
+    if(!scene)
+        return;
+
+
+    const time =
+        clock.getElapsedTime();
+
+
+    scene.fog.density =
+        .033+
+        Math.sin(time*.15)*.006;
+
+}
+
+
+/* ==========================================================
+   تغيير السؤال بعد كل جلسة
+========================================================== */
+
+function rotateQuestionMemory(){
+
+    const used =
+        JSON.parse(
+            localStorage.getItem(
+                "USED_QUESTIONS"
+            ) || "[]"
+        );
+
+
+    if(
+        STATE.questionIndex >= 0
+    ){
+
+        if(
+            !used.includes(
+                STATE.questionIndex
+            )
+        ){
+
+            used.push(
+                STATE.questionIndex
+            );
+
+        }
+
+    }
+
+
+    localStorage.setItem(
+        "USED_QUESTIONS",
+        JSON.stringify(
+            used
+        )
+    );
+
+}
+
+
+/* ==========================================================
+   حفظ
+========================================================== */
+
+setInterval(
+    function(){
+
+        if(
+            STATE.worldStarted
+        ){
+
+            localStorage.setItem(
+                "UNKNOWN_PROGRESS",
+                JSON.stringify(
+                    STATE
+                )
+            );
+
+        }
+
+    },
+    5000
+);
+
+
+/* ==========================================================
+   Resize
+========================================================== */
 
 function resize(){
 
-    camera.aspect=
+    if(!camera || !renderer)
+        return;
+
+
+    camera.aspect =
         window.innerWidth/
         window.innerHeight;
 
@@ -1824,9 +2867,9 @@ function resize(){
 }
 
 
-/* =====================================================
-   ANIMATION
-===================================================== */
+/* ==========================================================
+   Animation
+========================================================== */
 
 function animate(){
 
@@ -1835,1468 +2878,18 @@ function animate(){
     );
 
 
-    const time=
-        clock.getElapsedTime();
-
-
-    /* ROBOT */
-
-    if(robot){
-
-        robot.position.y=
-            -.1+
-            Math.sin(time*2)*.025;
-
-
-        robot.rotation.y=
-            Math.sin(time*.6)*.15;
-
-    }
-
-
-    /* PARTICLES */
-
-    if(particles){
-
-        particles.rotation.y=
-            time*.008;
-
-    }
-
-
-    /* CAMERA */
-
-    camera.position.x +=
-        (
-            mouseX*.9-
-            camera.position.x
-        )*.025;
-
-
-    camera.position.y +=
-        (
-            1.7-
-            mouseY*.45-
-            camera.position.y
-        )*.025;
-
-
-    camera.lookAt(
-        0,
-        .5,
-        -1
-    );
-
-
-    renderer.render(
-        scene,
-        camera
-    );
-
-}
-
-
-/* =====================================================
-   START
-===================================================== */
-
-createWorld();
-
-</script>
-
-</body>
-</html>/* =====================================================
-   PART 2
-   نظام الاستكشاف والتفاعل والألغاز
-===================================================== */
-
-
-/* -----------------------------------------------------
-   حالة اللعبة
------------------------------------------------------ */
-
-const game = {
-
-    keys: 0,
-
-    puzzleSolved: false,
-
-    gateOpened: false,
-
-    secretFound: false,
-
-    robotTalks: 0,
-
-    points: 0,
-
-    canMove: true
-
-};
-
-
-/* -----------------------------------------------------
-   حركة اللاعب / الكاميرا
------------------------------------------------------ */
-
-let targetCameraX = 0;
-
-let targetCameraY = 1.7;
-
-let playerZ = 9;
-
-let playerX = 0;
-
-
-/* -----------------------------------------------------
-   عناصر تفاعلية
------------------------------------------------------ */
-
-let interactables = [];
-
-
-/* -----------------------------------------------------
-   إنشاء مفتاح 3D
------------------------------------------------------ */
-
-function createKey(){
-
-    const keyGroup =
-        new THREE.Group();
-
-
-    /* الحلقة */
-
-    const ring =
-        new THREE.Mesh(
-
-            new THREE.TorusGeometry(
-                .18,
-                .045,
-                12,
-                32
-            ),
-
-            new THREE.MeshStandardMaterial({
-
-                color:0x777777,
-
-                metalness:1,
-
-                roughness:.2
-
-            })
-
-        );
-
-
-    /* ساق المفتاح */
-
-    const shaft =
-        new THREE.Mesh(
-
-            new THREE.BoxGeometry(
-                .08,
-                .45,
-                .08
-            ),
-
-            new THREE.MeshStandardMaterial({
-
-                color:0x777777,
-
-                metalness:1,
-
-                roughness:.2
-
-            })
-
-        );
-
-
-    shaft.rotation.z =
-        Math.PI / 2;
-
-
-    shaft.position.x =
-        .25;
-
-
-    keyGroup.add(
-        ring,
-        shaft
-    );
-
-
-    keyGroup.position.set(
-        -3,
-        -.25,
-        -1
-    );
-
-
-    keyGroup.rotation.x =
-        .5;
-
-
-    keyGroup.rotation.z =
-        -.5;
-
-
-    scene.add(
-        keyGroup
-    );
-
-
-    keyGroup.userData.type =
-        "key";
-
-
-    interactables.push(
-        keyGroup
-    );
-
-}
-
-
-/* -----------------------------------------------------
-   إنشاء رمز سري
------------------------------------------------------ */
-
-function createSecret(){
-
-    const secret =
-        new THREE.Group();
-
-
-    const outer =
-        new THREE.Mesh(
-
-            new THREE.TorusGeometry(
-                .35,
-                .025,
-                10,
-                48
-            ),
-
-            new THREE.MeshBasicMaterial({
-
-                color:0x555555,
-
-                transparent:true,
-
-                opacity:.8
-
-            })
-
-        );
-
-
-    const inner =
-        new THREE.Mesh(
-
-            new THREE.SphereGeometry(
-                .09,
-                16,
-                16
-            ),
-
-            new THREE.MeshBasicMaterial({
-
-                color:0x999999
-
-            })
-
-        );
-
-
-    secret.add(
-        outer,
-        inner
-    );
-
-
-    secret.position.set(
-        3,
-        1.2,
-        -1.5
-    );
-
-
-    scene.add(
-        secret
-    );
-
-
-    secret.userData.type =
-        "secret";
-
-
-    interactables.push(
-        secret
-    );
-
-}
-
-
-/* -----------------------------------------------------
-   إضافة الأشياء
------------------------------------------------------ */
-
-createKey();
-
-createSecret();
-
-
-/* -----------------------------------------------------
-   زر التفاعل
------------------------------------------------------ */
-
-const interactButton =
-    document.createElement("button");
-
-
-interactButton.innerHTML =
-    "تفاعل";
-
-
-interactButton.style.position =
-    "fixed";
-
-
-interactButton.style.left =
-    "50%";
-
-
-interactButton.style.bottom =
-    "115px";
-
-
-interactButton.style.transform =
-    "translateX(-50%)";
-
-
-interactButton.style.zIndex =
-    "30";
-
-
-interactButton.style.padding =
-    "12px 30px";
-
-
-interactButton.style.background =
-    "rgba(0,0,0,.8)";
-
-
-interactButton.style.border =
-    "1px solid #444";
-
-
-interactButton.style.color =
-    "#888";
-
-
-interactButton.style.display =
-    "none";
-
-
-interactButton.style.cursor =
-    "pointer";
-
-
-document.body.appendChild(
-    interactButton
-);
-
-
-interactButton.onclick =
-    interact;
-
-
- /* -----------------------------------------------------
-    اكتشاف أقرب شيء
- ----------------------------------------------------- */
-
-function findNearestObject(){
-
-    let nearest = null;
-
-    let distance = Infinity;
-
-
-    interactables.forEach(
-        function(object){
-
-            const d =
-                camera.position.distanceTo(
-                    object.position
-                );
-
-
-            if(d < distance){
-
-                distance = d;
-
-                nearest = object;
-
-            }
-
-        }
-    );
-
-
-    if(
-        nearest &&
-        distance < 4
-    ){
-
-        interactButton.style.display =
-            "block";
-
-
-        return nearest;
-
-    }
-
-
-    interactButton.style.display =
-        "none";
-
-
-    return null;
-
-}
-
-
-/* -----------------------------------------------------
-   التفاعل
------------------------------------------------------ */
-
-function interact(){
-
-    const object =
-        findNearestObject();
-
-
-    if(!object)
+    if(!scene)
         return;
 
 
-    /* المفتاح */
+    updateRobot();
 
-    if(
-        object.userData.type ===
-        "key"
-    ){
-
-        collectKey(
-            object
-        );
-
-        return;
-
-    }
-
-
-    /* السر */
-
-    if(
-        object.userData.type ===
-        "secret"
-    ){
-
-        discoverSecret(
-            object
-        );
-
-        return;
-
-    }
-
-}
-
-
-/* -----------------------------------------------------
-   أخذ المفتاح
------------------------------------------------------ */
-
-function collectKey(object){
-
-    if(game.keys > 0)
-        return;
-
-
-    game.keys = 1;
-
-    game.points += 100;
-
-
-    scene.remove(
-        object
-    );
-
-
-    interactButton.style.display =
-        "none";
-
-
-    document
-        .getElementById(
-            "robotSpeech"
-        )
-        .innerHTML =
-
-        "وجدت المفتاح..." +
-        "<br>" +
-        "لكن لا أعرف لماذا كان هنا.";
-
-
-    setTimeout(
-        function(){
-
-            document
-                .getElementById(
-                    "robotSpeech"
-                )
-                .innerHTML =
-
-                "البوابة قد تعرف.";
-
-        },
-        3000
-    );
-
-}
-
-
-/* -----------------------------------------------------
-   اكتشاف السر
------------------------------------------------------ */
-
-function discoverSecret(object){
-
-    if(game.secretFound)
-        return;
-
-
-    game.secretFound =
-        true;
-
-
-    game.points += 250;
-
-
-    scene.remove(
-        object
-    );
-
-
-    interactButton.style.display =
-        "none";
-
-
-    flashScreen();
-
-
-    document
-        .getElementById(
-            "robotSpeech"
-        )
-        .innerHTML =
-
-        "أنت رأيته..." +
-        "<br>" +
-        "لم يكن من المفترض أن تراه.";
-
-
-    setTimeout(
-        function(){
-
-            showSecretMessage();
-
-        },
-        1000
-    );
-
-}
-
-
-/* -----------------------------------------------------
-   رسالة السر
------------------------------------------------------ */
-
-function showSecretMessage(){
-
-    const secretBox =
-        document.createElement("div");
-
-
-    secretBox.style.position =
-        "fixed";
-
-
-    secretBox.style.inset =
-        "0";
-
-
-    secretBox.style.zIndex =
-        "90";
-
-
-    secretBox.style.display =
-        "flex";
-
-
-    secretBox.style.alignItems =
-        "center";
-
-
-    secretBox.style.justifyContent =
-        "center";
-
-
-    secretBox.style.textAlign =
-        "center";
-
-
-    secretBox.style.background =
-        "rgba(0,0,0,.93)";
-
-
-    secretBox.innerHTML =
-
-        `<div style="
-            color:#aaa;
-            width:90%;
-            max-width:500px;
-            line-height:2.2;
-        ">
-
-            <div style="
-                font-size:11px;
-                color:#444;
-                letter-spacing:5px;
-                margin-bottom:25px;
-            ">
-                FILE 001
-            </div>
-
-            <div style="
-                font-size:25px;
-            ">
-                لا تثق بالروبوت.
-            </div>
-
-            <br>
-
-            <div style="
-                color:#555;
-                font-size:13px;
-            ">
-                هو لا يخبرك بكل شيء.
-            </div>
-
-            <br>
-
-            <button
-                onclick="this.parentElement.parentElement.remove()"
-                style="
-                    background:#050505;
-                    color:#777;
-                    border:1px solid #333;
-                    padding:12px 30px;
-                    cursor:pointer;
-                "
-            >
-                أغلِ الملف
-            </button>
-
-        </div>`;
-
-
-    document.body.appendChild(
-        secretBox
-    );
-
-}
-
-
-/* -----------------------------------------------------
-   فتح البوابة
------------------------------------------------------ */
-
-function tryOpenGate(){
-
-    if(game.gateOpened)
-        return;
-
-
-    if(game.keys < 1){
-
-        document
-            .getElementById(
-                "robotSpeech"
-            )
-            .innerHTML =
-
-            "البوابة مغلقة..." +
-            "<br>" +
-            "أنت تحتاج شيئًا.";
-
-        return;
-
-    }
-
-
-    openGate();
-
-}
-
-
-/* -----------------------------------------------------
-   حركة البوابة
------------------------------------------------------ */
-
-function openGate(){
-
-    game.gateOpened =
-        true;
-
-
-    document
-        .getElementById(
-            "robotSpeech"
-        )
-        .innerHTML =
-
-        "المفتاح يعمل..." +
-        "<br>" +
-        "ابتعد.";
-
-    
-    let progress = 0;
-
-
-    const opening =
-        setInterval(
-            function(){
-
-                progress += .025;
-
-
-                gateLeft.position.x =
-                    -1 -
-                    progress * 2;
-
-
-                gateRight.position.x =
-                    1 +
-                    progress * 2;
-
-
-                if(progress >= 1){
-
-                    clearInterval(
-                        opening
-                    );
-
-
-                    game.points += 500;
-
-
-                    document
-                        .getElementById(
-                            "robotSpeech"
-                        )
-                        .innerHTML =
-
-                        "الباب فتح..." +
-                        "<br>" +
-                        "لكنني لا أريد أن أدخل.";
-
-                }
-
-            },
-            30
-        );
-
-}
-
-
-/* -----------------------------------------------------
-   إضافة زر البوابة
------------------------------------------------------ */
-
-const gateButton =
-    document.createElement("button");
-
-
-gateButton.innerHTML =
-    "افحص البوابة";
-
-
-gateButton.style.position =
-    "fixed";
-
-
-gateButton.style.left =
-    "50%";
-
-
-gateButton.style.top =
-    "58%";
-
-
-gateButton.style.transform =
-    "translateX(-50%)";
-
-
-gateButton.style.zIndex =
-    "20";
-
-
-gateButton.style.padding =
-    "11px 25px";
-
-
-gateButton.style.background =
-    "rgba(0,0,0,.75)";
-
-
-gateButton.style.border =
-    "1px solid #333";
-
-
-gateButton.style.color =
-    "#777";
-
-
-gateButton.style.cursor =
-    "pointer";
-
-
-gateButton.onclick =
-    tryOpenGate;
-
-
-document.body.appendChild(
-    gateButton
-);
-
-
-/* -----------------------------------------------------
-   اللغز
------------------------------------------------------ */
-
-function showPuzzle(){
-
-    const puzzle =
-        document.createElement("div");
-
-
-    puzzle.id =
-        "puzzleWindow";
-
-
-    puzzle.style.position =
-        "fixed";
-
-
-    puzzle.style.inset =
-        "0";
-
-
-    puzzle.style.zIndex =
-        "80";
-
-
-    puzzle.style.display =
-        "flex";
-
-
-    puzzle.style.alignItems =
-        "center";
-
-
-    puzzle.style.justifyContent =
-        "center";
-
-
-    puzzle.style.background =
-        "rgba(0,0,0,.9)";
-
-
-    puzzle.innerHTML =
-
-        `<div style="
-            width:90%;
-            max-width:500px;
-            padding:30px;
-            text-align:center;
-            background:#050608;
-            border:1px solid #333;
-        ">
-
-            <div style="
-                color:#444;
-                font-size:10px;
-                letter-spacing:4px;
-                margin-bottom:20px;
-            ">
-                اللغز الأول
-            </div>
-
-            <div style="
-                color:#aaa;
-                font-size:20px;
-                line-height:2;
-                margin-bottom:25px;
-            ">
-
-                شيء يملك وجهًا
-                <br>
-                ولا يملك عينين.
-                <br><br>
-                ما هو؟
-
-            </div>
-
-            <div style="
-                display:grid;
-                grid-template-columns:1fr 1fr;
-                gap:10px;
-            ">
-
-                <button onclick="puzzleWrong(this)">
-                    القمر
-                </button>
-
-                <button onclick="puzzleCorrect(this)">
-                    الساعة
-                </button>
-
-                <button onclick="puzzleWrong(this)">
-                    الباب
-                </button>
-
-                <button onclick="puzzleWrong(this)">
-                    الروبوت
-                </button>
-
-            </div>
-
-            <div
-                id="puzzleResult"
-                style="
-                    min-height:35px;
-                    margin-top:20px;
-                    color:#666;
-                    line-height:1.8;
-                "
-            ></div>
-
-        </div>`;
-
-
-    document.body.appendChild(
-        puzzle
-    );
-
-
-    const buttons =
-        puzzle.querySelectorAll(
-            "button"
-        );
-
-
-    buttons.forEach(
-        function(button){
-
-            button.style.padding =
-                "13px";
-
-
-            button.style.background =
-                "#08090b";
-
-
-            button.style.color =
-                "#777";
-
-
-            button.style.border =
-                "1px solid #292929";
-
-
-            button.style.cursor =
-                "pointer";
-
-        }
-    );
-
-}
-
-
-/* -----------------------------------------------------
-   إجابة خاطئة
------------------------------------------------------ */
-
-function puzzleWrong(){
-
-    const result =
-        document.getElementById(
-            "puzzleResult"
-        );
-
-
-    result.innerHTML =
-        "خطأ... حاول مرة أخرى.";
-
-
-    document
-        .getElementById(
-            "robotSpeech"
-        )
-        .innerHTML =
-
-        "حقًا؟" +
-        "<br>" +
-        "هذه كانت إجابتك؟";
-
-}
-
-
-/* -----------------------------------------------------
-   إجابة صحيحة
------------------------------------------------------ */
-
-function puzzleCorrect(){
-
-    if(game.puzzleSolved)
-        return;
-
-
-    game.puzzleSolved =
-        true;
-
-
-    game.points += 300;
-
-
-    document
-        .getElementById(
-            "puzzleResult"
-        )
-        .innerHTML =
-
-        "صحيح..." +
-        "<br>" +
-        "لكن السؤال الحقيقي لم يبدأ بعد.";
-
-
-    document
-        .getElementById(
-            "robotSpeech"
-        )
-        .innerHTML =
-
-        "أحسنت..." +
-        "<br>" +
-        "لم أتوقع ذلك.";
-
-
-    setTimeout(
-        function(){
-
-            const window =
-                document.getElementById(
-                    "puzzleWindow"
-                );
-
-
-            if(window)
-                window.remove();
-
-
-        },
-        2200
-    );
-
-}
-
-
-/* -----------------------------------------------------
-   فتح اللغز من البوابة
------------------------------------------------------ */
-
-gateButton.addEventListener(
-    "click",
-    function(){
-
-        if(game.gateOpened)
-            return;
-
-
-        if(game.keys === 0){
-
-            document
-                .getElementById(
-                    "robotSpeech"
-                )
-                .innerHTML =
-
-                "تحتاج إلى المفتاح أولًا.";
-
-            return;
-
-        }
-
-
-        showPuzzle();
-
-    }
-);
-
-
-/* -----------------------------------------------------
-   تأثير الفلاش
------------------------------------------------------ */
-
-function flashScreen(){
-
-    const flash =
-        document.getElementById(
-            "flash"
-        );
-
-
-    flash.style.opacity =
-        ".7";
-
-
-    setTimeout(
-        function(){
-
-            flash.style.opacity =
-                "0";
-
-        },
-        120
-    );
-
-}
-
-
-/* -----------------------------------------------------
-   تحديث التفاعل باستمرار
------------------------------------------------------ */
-
-function updateInteraction(){
-
-    if(!gameStarted)
-        return;
-
-
-    findNearestObject();
-
-}
-
-
-/* -----------------------------------------------------
-   تحريك الروبوت نحو اللاعب
------------------------------------------------------ */
-
-let robotFollow =
-    false;
-
-
-function makeRobotFollow(){
-
-    robotFollow =
-        true;
-
-
-    document
-        .getElementById(
-            "robotSpeech"
-        )
-        .innerHTML =
-
-        "سأتبعك..." +
-        "<br>" +
-        "لا تقلق.";
-
-
-}
-
-
-/* -----------------------------------------------------
-   تحديث الروبوت
------------------------------------------------------ */
-
-function updateRobot(){
-
-    if(!robot)
-        return;
-
-
-    if(
-        robotFollow &&
-        !game.gateOpened
-    ){
-
-        const dx =
-            camera.position.x -
-            robot.position.x;
-
-
-        const dz =
-            camera.position.z -
-            robot.position.z;
-
-
-        robot.position.x +=
-            dx * .005;
-
-
-        robot.position.z +=
-            dz * .005;
-
-    }
-
-
-}
-
-
-/* -----------------------------------------------------
-   حفظ اللعبة
------------------------------------------------------ */
-
-function saveGame(){
-
-    localStorage.setItem(
-        "unknown_world_save",
-
-        JSON.stringify(game)
-    );
-
-}
-
-
-/* -----------------------------------------------------
-   تحميل اللعبة
------------------------------------------------------ */
-
-function loadGame(){
-
-    const saved =
-        localStorage.getItem(
-            "unknown_world_save"
-        );
-
-
-    if(!saved)
-        return;
-
-
-    try{
-
-        const data =
-            JSON.parse(
-                saved
-            );
-
-
-        Object.assign(
-            game,
-            data
-        );
-
-
-        if(game.puzzleSolved){
-
-            document
-                .getElementById(
-                    "robotSpeech"
-                )
-                .innerHTML =
-
-                "أنت عدت..." +
-                "<br>" +
-                "أتذكر ما فعلت.";
-
-        }
-
-
-    }catch(error){
-
-        console.log(
-            "تعذر تحميل الحفظ."
-        );
-
-    }
-
-}
-
-
-/* -----------------------------------------------------
-   الحفظ التلقائي
------------------------------------------------------ */
-
-setInterval(
-    saveGame,
-    5000
-);
-
-
-/* -----------------------------------------------------
-   تحديث اللعبة
------------------------------------------------------ */
-
-setInterval(
-    updateInteraction,
-    100
-);
-
-
-setInterval(
-    updateRobot,
-    30
-);
-
-
-/* -----------------------------------------------------
-   تحميل الحفظ
------------------------------------------------------ */
-
-loadGame();
-
-
-/* -----------------------------------------------------
-   نقر الروبوت
------------------------------------------------------ */
-
-renderer.domElement.addEventListener(
-    "click",
-    function(){
-
-        if(!robot)
-            return;
-
-
-        const raycaster =
-            new THREE.Raycaster();
-
-
-        const mouse =
-            new THREE.Vector2(
-                0,
-                0
-            );
-
-
-        raycaster.setFromCamera(
-            mouse,
-            camera
-        );
-
-
-        const hits =
-            raycaster.intersectObject(
-                robot,
-                true
-            );
-
-
-        if(hits.length){
-
-            if(game.robotTalks === 0){
-
-                game.robotTalks++;
-
-
-                document
-                    .getElementById(
-                        "robotSpeech"
-                    )
-                    .innerHTML =
-
-                    "أوه..." +
-                    "<br>" +
-                    "أنت تستطيع رؤيتي.";
-
-            }
-
-            else if(
-                game.robotTalks === 1
-            ){
-
-                game.robotTalks++;
-
-
-                document
-                    .getElementById(
-                        "robotSpeech"
-                    )
-                    .innerHTML =
-
-                    "لا تضغط علي مرة أخرى.";
-
-            }
-
-            else{
-
-                makeRobotFollow();
-
-            }
-
-        }
-
-    });
-
-
-/* -----------------------------------------------------
-   إعادة تعريف animate
-   لإضافة أنظمة الجزء الثاني
------------------------------------------------------ */
-
-const oldAnimate =
-    animate;
-
-
-function animate(){
-
-    requestAnimationFrame(
-        animate
-    );
-
-
-    const time =
-        clock.getElapsedTime();
-
-
-    if(robot){
-
-        robot.position.y =
-            -.1 +
-            Math.sin(time*2)*.025;
-
-        robot.rotation.y =
-            Math.sin(time*.6)*.15;
-
-    }
-
-
-    if(particles){
-
-        particles.rotation.y =
-            time*.008;
-
-    }
+    updateAtmosphere();
 
 
     camera.position.x +=
         (
-            mouseX*.9 -
+            mouseX*.8 -
             camera.position.x
         )*.025;
 
@@ -3304,7 +2897,7 @@ function animate(){
     camera.position.y +=
         (
             1.7 -
-            mouseY*.45 -
+            mouseY*.35 -
             camera.position.y
         )*.025;
 
@@ -3312,7 +2905,7 @@ function animate(){
     camera.lookAt(
         0,
         .5,
-        -1
+        -2
     );
 
 
@@ -3322,3 +2915,24 @@ function animate(){
     );
 
 }
+
+
+/* ==========================================================
+   بداية الموقع
+========================================================== */
+
+if(
+    !checkBan()
+){
+
+    /*
+       الموقع يبدأ من شاشة الاختيار.
+    */
+
+}
+
+</script>
+
+</body>
+
+      </html>
