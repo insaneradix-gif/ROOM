@@ -657,7 +657,106 @@ function animate(){
 if(!checkBan()){
     // اللعبة تبدأ تلقائياً وتنتظر اختيار اللاعب
 }
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تجربة الوضع المظلم والفاتح</title>
+    
+    <style>
+        /* 1. الألوان الأساسية للموقع (الوضع الفاتح الافتراضي) */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+        }
 
-</script>
+        /* 2. الألوان عند تفعيل الوضع المظلم */
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #f1f1f1;
+        }
+
+        /* 3. تطبيق الألوان على جسم الصفحة مع تأثير انتقال سلس */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 40px;
+        }
+
+        /* 4. تصميم لوحة أزرار التبديل العائمة */
+        .theme-switcher {
+            position: fixed;
+            bottom: 20px;
+            right: 20px; /* يمكنك تغييرها إلى left إذا أردت الزر على اليسار */
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 8px 12px;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        /* تعديل لون اللوحة العائمة في الوضع المظلم */
+        [data-theme="dark"] .theme-switcher {
+            background-color: rgba(40, 40, 40, 0.9);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* تصميم الأزرار داخل اللوحة */
+        .theme-switcher button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+
+        .theme-switcher button:hover {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- محتوى تجريبي للصفحة -->
+    <h1>مرحباً بك في موقعي</h1>
+    <p>جرب الضغط على أزرار الشمس والقمر في أسفل الشاشة لتغيير إضاءة الموقع. سيتم حفظ خيارك حتى إذا قمت بتحديث الصفحة.</p>
+
+    <!-- 5. كود HTML لأزرار التبديل (يوضع في أسفل الصفحة) -->
+    <div class="theme-switcher">
+        <button id="theme-light" title="وضع فاتح">☀️</button>
+        <button id="theme-dark" title="وضع مظلم">🌙</button>
+    </div>
+
+    <!-- 6. كود JavaScript لتشغيل الأزرار وحفظ الخيار -->
+    <script>
+        const lightBtn = document.getElementById('theme-light');
+        const darkBtn = document.getElementById('theme-dark');
+
+        // التحقق مما إذا كان المستخدم قد اختار وضعاً مسبقاً وتم حفظه في المتصفح
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+        }
+
+        // تفعيل الوضع الفاتح عند الضغط على زر الشمس
+        lightBtn.addEventListener('click', () => {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('theme', 'light'); 
+        });
+
+        // تفعيل الوضع المظلم عند الضغط على زر القمر
+        darkBtn.addEventListener('click', () => {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark'); 
+        });
+    </script>
+
 </body>
 </html>
+
