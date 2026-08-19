@@ -1,1225 +1,663 @@
-/* ==========================================================
-   THE LAST QUESTION
-   ADVANCED HORROR AUDIO ENGINE
-   Web Audio API — بدون ملفات صوت خارجية
-========================================================== */
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>THE LAST QUESTION</title>
+
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+html, body{ width:100%; height:100%; overflow:hidden; background:#000; color:#aaa; font-family: Tahoma, Arial, sans-serif; }
+body{ user-select:none; }
+canvas{ position:fixed; inset:0; z-index:0; }
+
+#vignette{ position:fixed; inset:0; z-index:5; pointer-events:none; background: radial-gradient( ellipse at center, transparent 20%, rgba(0,0,0,.35) 60%, rgba(0,0,0,.95) 100% ); }
+
+#intro{ position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; background: radial-gradient( circle at center, #111 0%, #050505 35%, #000 80% ); transition: opacity 1.5s, transform 1.5s; }
+#intro.hide{ opacity:0; transform:scale(1.08); pointer-events:none; }
+.introBox{ width:min(850px,92%); text-align:center; }
+.warning{ color:#333; font-size:10px; letter-spacing:7px; margin-bottom:35px; }
+.title{ font-size: clamp(38px,10vw,90px); font-weight:100; letter-spacing:12px; color:#aaa; text-shadow: 0 0 40px rgba(255,255,255,.08); margin-bottom:25px; }
+.subtitle{ color:#555; font-size:12px; line-height:2; margin-bottom:40px; }
+
+#choiceScreen{ display:none; }
+#choiceScreen.active{ display:block; }
+.choiceQuestion{ color:#888; font-size: clamp(20px,5vw,32px); line-height:2; margin-bottom:35px; }
+.choices{ display:flex; gap:18px; justify-content:center; flex-wrap:wrap; }
+.choice{ width:min(330px,90vw); min-height:100px; padding:22px; color:#777; background: linear-gradient( 145deg, rgba(255,255,255,.035), rgba(255,255,255,.005) ); border:1px solid #292929; cursor:pointer; transition: .5s; position:relative; overflow:hidden; }
+.choice:hover{ color:#ddd; border-color:#666; transform: translateY(-5px); box-shadow: 0 20px 80px rgba(0,0,0,.8); }
+.choiceNumber{ display:block; color:#333; font-size:10px; margin-bottom:12px; }
+.choiceText{ font-size:15px; line-height:1.8; }
+
+#philosophy{ display:none; }
+#philosophy.active{ display:block; }
+.questionCounter{ color:#333; font-size:10px; letter-spacing:4px; margin-bottom:25px; }
+.question{ color:#aaa; font-size: clamp(19px,5vw,31px); line-height:2; margin-bottom:35px; }
+.answers{ display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:12px; width:min(650px,95%); margin:auto; }
+.answer{ padding:17px; background:#070707; border:1px solid #292929; color:#777; cursor:pointer; transition:.35s; }
+.answer:hover{ color:#fff; border-color:#777; background:#101010; }
+
+#banScreen{ display:none; position:fixed; inset:0; z-index:100; align-items:center; justify-content:center; text-align:center; background: radial-gradient( circle, #1a0000, #050000 45%, #000 90% ); }
+#banScreen.active{ display:flex; }
+.banBox{ width:min(650px,90%); }
+.banSymbol{ font-size:70px; color:#5c0000; margin-bottom:25px; animation: pulse 1.5s infinite; }
+@keyframes pulse{ 0%,100%{ opacity:.4; } 50%{ opacity:1; } }
+.banTitle{ color:#800000; font-size: clamp(30px,8vw,60px); letter-spacing:6px; margin-bottom:20px; }
+.banText{ color:#555; line-height:2; font-size:13px; }
+
+#game{ display:none; position:fixed; inset:0; z-index:10; }
+#game.active{ display:block; }
+#hud{ position:absolute; inset:0; pointer-events:none; }
+.topHud{ position:absolute; top:20px; left:20px; right:20px; display:flex; justify-content:space-between; align-items:flex-start; }
+.hudBlock{ color:#555; font-size:10px; line-height:1.8; }
+.hudValue{ color:#999; font-size:15px; }
+.stage{ text-align:center; }
+.stageName{ color:#888; font-size:12px; letter-spacing:4px; }
+.stageSub{ color:#333; font-size:9px; margin-top:5px; }
+
+#robotDialogue{ position:absolute; left:50%; bottom:25px; transform: translateX(-50%); width:min(600px,90%); text-align:center; }
+.robotName{ color:#555; font-size:9px; letter-spacing:5px; margin-bottom:8px; }
+.robotText{ color:#888; font-size:13px; line-height:1.8; }
+
+#interact{ position:absolute; left:50%; bottom:100px; transform: translateX(-50%); pointer-events:auto; display:none; padding: 13px 35px; background: rgba(0,0,0,.85); color:#888; border:1px solid #444; cursor:pointer; }
+#interact.show{ display:block; }
+
+.modal{ position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; background: rgba(0,0,0,.93); padding:20px; }
+.modal.active{ display:flex; }
+.modalBox{ width:min(650px,95%); background: linear-gradient( 145deg, #0b0c0e, #030303 ); border:1px solid #292929; padding:35px; text-align:center; }
+.modalLabel{ color:#333; font-size:9px; letter-spacing:5px; margin-bottom:20px; }
+.modalTitle{ color:#999; font-size:22px; line-height:1.8; margin-bottom:25px; }
+.modalDescription{ color:#555; font-size:12px; line-height:2; margin-bottom:25px; }
+.modalAnswers{ display:grid; gap:10px; }
+.modalAnswer{ padding:15px; background:#060606; color:#777; border:1px solid #292929; cursor:pointer; transition:.3s; }
+.modalAnswer:hover{ color:#fff; border-color:#777; }
+.modalResult{ min-height:30px; color:#777; margin-top:20px; font-size:12px; }
+
+#ending{ display:none; position:fixed; inset:0; z-index:120; background:#000; align-items:center; justify-content:center; text-align:center; }
+#ending.active{ display:flex; }
+.endingBox{ width:min(700px,90%); }
+.endingTitle{ color:#999; font-size: clamp(30px,8vw,60px); margin-bottom:25px; }
+.endingText{ color:#555; line-height:2.2; font-size:13px; }
+
+@media(max-width:600px){
+    .answers{ grid-template-columns:1fr; }
+    .topHud{ top:12px; left:12px; right:12px; }
+    .title{ letter-spacing:7px; }
+}
+</style>
+</head>
+<body>
+
+<div id="vignette"></div>
+
+<!-- شاشة البداية -->
+<div id="intro">
+    <div class="introBox">
+        <div class="warning">تحذير — لا يوجد رجوع</div>
+        <div class="title">THE LAST QUESTION</div>
+        <div class="subtitle">هذا المكان لا يبحث عن الأذكياء.<br>إنه يبحث عن شخص يستطيع تحمل الإجابة.</div>
+        
+        <div id="choiceScreen" class="active">
+            <div class="choiceQuestion">قبل أن تبدأ...<br>اختر الطريقة التي تريد أن تواجه بها الحقيقة.</div>
+            <div class="choices">
+                <button class="choice" onclick="choosePath('mind')">
+                    <span class="choiceNumber">01</span>
+                    <span class="choiceText">أريد أن أفكر<br>حتى لو كانت الإجابة تؤلمني.</span>
+                </button>
+                <button class="choice" onclick="choosePath('fear')">
+                    <span class="choiceNumber">02</span>
+                    <span class="choiceText">لا أريد الحقيقة.<br>أريد أن أعرف ماذا تخفي.</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- الأسئلة -->
+        <div id="philosophy">
+            <div id="questionCounter" class="questionCounter"></div>
+            <div id="question" class="question"></div>
+            <div id="answers" class="answers"></div>
+        </div>
+    </div>
+</div>
+
+<!-- شاشة الطرد -->
+<div id="banScreen">
+    <div class="banBox">
+        <div class="banSymbol">⛓</div>
+        <div class="banTitle">مرفوض</div>
+        <div class="banText">إجابتك كشفت أنك لست مستعدًا.<br><br>تم إغلاق الباب.<br>لا تحاول العودة.</div>
+    </div>
+</div>
+
+<!-- اللعبة -->
+<div id="game">
+    <div id="hud">
+        <div class="topHud">
+            <div class="hudBlock">النقاط<div id="points" class="hudValue">0</div></div>
+            <div class="stage">
+                <div id="stageName" class="stageName">البداية</div>
+                <div id="stageSub" class="stageSub">لا تثق بأول شيء تراه</div>
+            </div>
+            <div class="hudBlock">المحاولات<div id="mistakes" class="hudValue">0</div></div>
+        </div>
+        <div id="robotDialogue">
+            <div class="robotName">UNIT-07</div>
+            <div id="robotText" class="robotText">...</div>
+        </div>
+        <button id="interact" onclick="interact()">تفاعل</button>
+    </div>
+</div>
+
+<!-- نافذة اللغز -->
+<div id="puzzleModal" class="modal">
+    <div class="modalBox">
+        <div class="modalLabel">اختبار</div>
+        <div id="puzzleTitle" class="modalTitle"></div>
+        <div id="puzzleDescription" class="modalDescription"></div>
+        <div id="puzzleAnswers" class="modalAnswers"></div>
+        <div id="puzzleResult" class="modalResult"></div>
+    </div>
+</div>
+
+<!-- النهاية -->
+<div id="ending">
+    <div class="endingBox">
+        <div id="endingTitle" class="endingTitle"></div>
+        <div id="endingText" class="endingText"></div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+/* ==========================================================
+   حالة اللعبة والأسئلة
+========================================================== */
+const STATE = {
+    path:null, questionIndex:0, points:0, mistakes:0, stage:1,
+    key:false, secret:false, puzzleSolved:false, robotAwake:false, worldStarted:false, ended:false
+};
+
+const QUESTIONS = [
+{ text: "إذا كان بإمكانك معرفة يوم موتك بدقة،<br>هل ستكون معرفتك بذلك حرية... أم سجنًا؟", answers:[ "الحرية، لأن المعرفة تمنحني القدرة على الاستعداد.", "السجن، لأنني سأعيش كل يوم وأنا أعد الأيام.", "لا فرق، فالموت سيحدث سواء عرفته أم لا.", "لا يمكن أن أعرف." ], correct:1 },
+{ text: "إذا استبدلنا كل ذرة في جسدك تدريجيًا،<br>وبقيت ذكرياتك وشخصيتك كما هي...<br>هل ستظل أنت؟", answers:[ "نعم، لأن الذاكرة هي أنا.", "لا، لأن الجسد تغير بالكامل.", "لا توجد إجابة يمكن إثباتها.", "أنا الشخص الذي يقرر أنه أنا." ], correct:2 },
+{ text: "لو استطعت إنقاذ خمسة أشخاص<br>بالتسبب عمدًا في موت شخص واحد بريء،<br>هل تصبح التضحية صحيحة لأن العدد أكبر؟", answers:[ "نعم، النتيجة أهم.", "لا، قتل البريء يبقى خطأ.", "الأمر يعتمد على هوية الأشخاص.", "لا أستطيع اتخاذ القرار." ], correct:1 },
+{ text: "إذا كان كل قرار تتخذه نتيجة لسلسلة<br>من الأسباب التي حدثت قبل ولادتك،<br>فهل أنت حر فعلًا؟", answers:[ "نعم، لأنني أختار.", "لا، لأن كل شيء محدد مسبقًا.", "ربما الحرية مجرد شعور.", "السؤال نفسه يفترض وجود الحرية." ], correct:2 },
+{ text: "إذا كان العالم الذي تعيش فيه مجرد محاكاة،<br>وأخبرتك الآلة بذلك دون دليل...<br>هل ستصدقها؟", answers:[ "نعم.", "لا.", "سأبحث عن دليل.", "سأشك حتى في الدليل." ], correct:2 },
+{ text: "لو عُرض عليك أن تعيش حياة سعيدة بالكامل<br>لكنها كذبة لا تعرف أنها كذبة،<br>مقابل حياة حقيقية مليئة بالألم...", answers:[ "أختار السعادة.", "أختار الحقيقة.", "لا توجد قيمة للحياة دون معرفة الحقيقة.", "أرفض الاختيار." ], correct:1 }
+];
+
+const intro = document.getElementById("intro");
+const choiceScreen = document.getElementById("choiceScreen");
+const philosophy = document.getElementById("philosophy");
+const question = document.getElementById("question");
+const answers = document.getElementById("answers");
+const questionCounter = document.getElementById("questionCounter");
+const banScreen = document.getElementById("banScreen");
+const game = document.getElementById("game");
+const pointsElement = document.getElementById("points");
+const mistakesElement = document.getElementById("mistakes");
+const stageName = document.getElementById("stageName");
+const stageSub = document.getElementById("stageSub");
+const robotText = document.getElementById("robotText");
+const interactButton = document.getElementById("interact");
+const puzzleModal = document.getElementById("puzzleModal");
+
+/* ==========================================================
+   وظائف الصوت 
+========================================================== */
 let audioContext = null;
 let masterGain = null;
-let compressor = null;
-
 let ambienceStarted = false;
-let audioEnabled = true;
-
-let ambienceNodes = [];
-let noiseBuffer = null;
-
-
-/* ==========================================================
-   تهيئة محرك الصوت
-========================================================== */
 
 function initAudio(){
-
-    try{
-
-        if(!audioContext){
-
-            const AudioCtx =
-                window.AudioContext ||
-                window.webkitAudioContext;
-
-            if(!AudioCtx){
-                console.warn("Web Audio غير مدعوم.");
-                return;
-            }
-
-            audioContext =
-                new AudioCtx();
-
-
-            /*
-               Compressor يمنع تشويه الصوت
-               عندما تتداخل عدة مؤثرات.
-            */
-
-            compressor =
-                audioContext.createDynamicsCompressor();
-
-            compressor.threshold.value = -24;
-            compressor.knee.value = 18;
-            compressor.ratio.value = 8;
-            compressor.attack.value = .003;
-            compressor.release.value = .25;
-
-
-            masterGain =
-                audioContext.createGain();
-
-            masterGain.gain.value = .20;
-
-
-            masterGain.connect(
-                compressor
-            );
-
-            compressor.connect(
-                audioContext.destination
-            );
-
-        }
-
-
-        if(
-            audioContext.state === "suspended"
-        ){
-
-            audioContext.resume();
-
-        }
-
-    }catch(error){
-
-        console.warn(
-            "Audio initialization failed:",
-            error
-        );
-
-    }
-
+    if(audioContext) return;
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioContext.createGain();
+    masterGain.gain.value = 0.18;
+    masterGain.connect(audioContext.destination);
 }
 
-
-/* ==========================================================
-   استئناف الصوت بعد لمس المستخدم
-========================================================== */
-
-document.addEventListener(
-    "pointerdown",
-    function(){
-
-        initAudio();
-
-        if(
-            audioContext &&
-            audioContext.state === "suspended"
-        ){
-
-            audioContext.resume();
-
-        }
-
-    },
-    {
-        once:false,
-        passive:true
-    }
-);
-
-
-/* ==========================================================
-   مولد الضوضاء
-========================================================== */
-
-function createNoiseBuffer(){
-
-    if(!audioContext)
-        return null;
-
-
-    if(noiseBuffer)
-        return noiseBuffer;
-
-
-    const length =
-        audioContext.sampleRate * 2;
-
-
-    noiseBuffer =
-        audioContext.createBuffer(
-            1,
-            length,
-            audioContext.sampleRate
-        );
-
-
-    const data =
-        noiseBuffer.getChannelData(0);
-
-
-    for(
-        let i = 0;
-        i < length;
-        i++
-    ){
-
-        data[i] =
-            Math.random()*2-1;
-
-    }
-
-
-    return noiseBuffer;
-
+function mysteriousTone(frequency = 80, duration = 2, volume = .08){
+    if(!audioContext) return;
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    osc.type = "sine";
+    osc.frequency.value = frequency;
+    gain.gain.setValueAtTime(0, audioContext.currentTime);
+    gain.gain.linearRampToValueAtTime(volume, audioContext.currentTime+.3);
+    gain.gain.exponentialRampToValueAtTime(.001, audioContext.currentTime+ duration);
+    osc.connect(gain); gain.connect(masterGain);
+    osc.start(); osc.stop(audioContext.currentTime+ duration);
 }
-
-
-/* ==========================================================
-   تشغيل صوت Noise
-========================================================== */
-
-function playNoise(
-    duration = 1,
-    volume = .03,
-    filterFrequency = 900
-){
-
-    if(
-        !audioEnabled
-    )
-        return;
-
-
-    initAudio();
-
-
-    if(!audioContext)
-        return;
-
-
-    const source =
-        audioContext.createBufferSource();
-
-
-    const filter =
-        audioContext.createBiquadFilter();
-
-
-    const gain =
-        audioContext.createGain();
-
-
-    const buffer =
-        createNoiseBuffer();
-
-
-    if(!buffer)
-        return;
-
-
-    source.buffer =
-        buffer;
-
-
-    source.loop =
-        true;
-
-
-    filter.type =
-        "lowpass";
-
-
-    filter.frequency.value =
-        filterFrequency;
-
-
-    gain.gain.setValueAtTime(
-        .001,
-        audioContext.currentTime
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-        volume,
-        audioContext.currentTime+.15
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-        .001,
-        audioContext.currentTime+
-        duration
-    );
-
-
-    source.connect(filter);
-    filter.connect(gain);
-    gain.connect(masterGain);
-
-
-    source.start();
-
-
-    source.stop(
-        audioContext.currentTime+
-        duration+
-        .05
-    );
-
-}
-
-
-/* ==========================================================
-   نغمة غامضة محسنة
-========================================================== */
-
-function mysteriousTone(
-    frequency = 80,
-    duration = 2,
-    volume = .08
-){
-
-    if(!audioEnabled)
-        return;
-
-
-    initAudio();
-
-
-    if(!audioContext)
-        return;
-
-
-    const now =
-        audioContext.currentTime;
-
-
-    const oscillator =
-        audioContext.createOscillator();
-
-
-    const gain =
-        audioContext.createGain();
-
-
-    const filter =
-        audioContext.createBiquadFilter();
-
-
-    oscillator.type =
-        "sine";
-
-
-    oscillator.frequency.setValueAtTime(
-        frequency,
-        now
-    );
-
-
-    filter.type =
-        "lowpass";
-
-
-    filter.frequency.value =
-        Math.max(
-            150,
-            frequency*3
-        );
-
-
-    gain.gain.setValueAtTime(
-        .001,
-        now
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-        Math.max(volume,.001),
-        now+.08
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-        .001,
-        now+duration
-    );
-
-
-    oscillator.connect(filter);
-    filter.connect(gain);
-    gain.connect(masterGain);
-
-
-    oscillator.start(now);
-
-
-    oscillator.stop(
-        now+duration+.05
-    );
-
-}
-
-
-/* ==========================================================
-   صوت الاختيار
-========================================================== */
-
-function choiceSound(){
-
-    initAudio();
-
-    if(!audioContext)
-        return;
-
-
-    mysteriousTone(
-        155,
-        .22,
-        .045
-    );
-
-
-    setTimeout(
-        function(){
-
-            mysteriousTone(
-                95,
-                .4,
-                .035
-            );
-
-        },
-        90
-    );
-
-
-    playNoise(
-        .18,
-        .018,
-        1800
-    );
-
-}
-
-
-/* ==========================================================
-   صوت الإجابة الصحيحة
-========================================================== */
-
-function correctSound(){
-
-    initAudio();
-
-    if(!audioContext)
-        return;
-
-
-    const notes =
-        [
-            110,
-            165,
-            247,
-            330
-        ];
-
-
-    notes.forEach(
-        function(freq,index){
-
-            setTimeout(
-                function(){
-
-                    mysteriousTone(
-                        freq,
-                        .55,
-                        .045
-                    );
-
-                },
-                index*110
-            );
-
-        }
-    );
-
-
-    /*
-       طبقة عميقة تعطي الإحساس
-       بأن الباب فتح.
-    */
-
-    setTimeout(
-        function(){
-
-            mysteriousTone(
-                55,
-                .9,
-                .06
-            );
-
-        },
-        300
-    );
-
-}
-
-
-/* ==========================================================
-   صوت الخطأ
-========================================================== */
-
-function wrongSound(){
-
-    initAudio();
-
-    if(!audioContext)
-        return;
-
-
-    const now =
-        audioContext.currentTime;
-
-
-    /*
-       صوت منخفض جدًا
-    */
-
-    mysteriousTone(
-        48,
-        1.4,
-        .12
-    );
-
-
-    /*
-       ضربة Noise
-    */
-
-    playNoise(
-        .45,
-        .08,
-        500
-    );
-
-
-    /*
-       نغمة تهبط بدل أن تصعد
-    */
-
-    const osc =
-        audioContext.createOscillator();
-
-
-    const gain =
-        audioContext.createGain();
-
-
-    osc.type =
-        "sawtooth";
-
-
-    osc.frequency.setValueAtTime(
-        180,
-        now
-    );
-
-
-    osc.frequency.exponentialRampToValueAtTime(
-        35,
-        now+1.1
-    );
-
-
-    gain.gain.setValueAtTime(
-        .001,
-        now
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-        .07,
-        now+.03
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-        .001,
-        now+1.1
-    );
-
-
-    osc.connect(gain);
-    gain.connect(masterGain);
-
-
-    osc.start(now);
-
-
-    osc.stop(
-        now+1.15
-    );
-
-}
-
-
-/* ==========================================================
-   نبض مرعب
-========================================================== */
 
 function darkPulse(){
-
-    initAudio();
-
-    if(!audioContext)
-        return;
-
-
-    mysteriousTone(
-        42,
-        .65,
-        .11
-    );
-
-
-    setTimeout(
-        function(){
-
-            mysteriousTone(
-                35,
-                .85,
-                .09
-            );
-
-        },
-        280
-    );
-
-
-    /*
-       ضوضاء قصيرة تشبه حركة هواء
-    */
-
-    setTimeout(
-        function(){
-
-            playNoise(
-                .5,
-                .025,
-                300
-            );
-
-        },
-        100
-    );
-
+    if(!audioContext) return;
+    mysteriousTone(45, .8, .15);
+    setTimeout(function(){ mysteriousTone(38, 1, .12); }, 300);
 }
 
-
-/* ==========================================================
-   صوت الروبوت
-========================================================== */
-
-function robotSound(){
-
-    initAudio();
-
-    if(!audioContext)
-        return;
-
-
-    const now =
-        audioContext.currentTime;
-
-
-    /*
-       الطبقة الرئيسية
-    */
-
-    const osc =
-        audioContext.createOscillator();
-
-
-    const gain =
-        audioContext.createGain();
-
-
-    const filter =
-        audioContext.createBiquadFilter();
-
-
-    osc.type =
-        "square";
-
-
-    osc.frequency.setValueAtTime(
-        260,
-        now
-    );
-
-
-    osc.frequency.exponentialRampToValueAtTime(
-        80,
-        now+.7
-    );
-
-
-    filter.type =
-        "bandpass";
-
-
-    filter.frequency.value =
-        850;
-
-
-    filter.Q.value =
-        5;
-
-
-    gain.gain.setValueAtTime(
-        .001,
-        now
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-        .045,
-        now+.03
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-        .001,
-        now+.8
-    );
-
-
-    osc.connect(filter);
-    filter.connect(gain);
-    gain.connect(masterGain);
-
-
-    osc.start(now);
-
-
-    osc.stop(
-        now+.85
-    );
-
-
-    /*
-       طبقة معدنية ثانية
-    */
-
-    setTimeout(
-        function(){
-
-            mysteriousTone(
-                110,
-                .55,
-                .045
-            );
-
-        },
-        120
-    );
-
-
-    setTimeout(
-        function(){
-
-            mysteriousTone(
-                63,
-                .8,
-                .06
-            );
-
-        },
-        320
-    );
-
+function choiceSound(){
+    if(!audioContext) initAudio();
+    mysteriousTone(140, .35, .08);
+    mysteriousTone(70, .7, .05);
 }
 
-
-/* ==========================================================
-   صوت خطوات بعيدة
-========================================================== */
-
-function distantStep(){
-
-    initAudio();
-
-    if(!audioContext)
-        return;
-
-
-    mysteriousTone(
-        38,
-        .25,
-        .055
-    );
-
-
-    playNoise(
-        .18,
-        .035,
-        220
-    );
-
+function correctSound(){
+    if(!audioContext) initAudio();
+    const notes = [120,180,260];
+    notes.forEach(function(freq,index){
+        setTimeout(function(){ mysteriousTone(freq, .7, .08); }, index*130);
+    });
 }
 
-
-/* ==========================================================
-   صوت البوابة
-========================================================== */
+function wrongSound(){
+    if(!audioContext) initAudio();
+    mysteriousTone(55, 1.2, .18);
+    setTimeout(function(){ mysteriousTone(35, 1.5, .12); }, 180);
+}
 
 function gateSound(){
-
-    initAudio();
-
-    if(!audioContext)
-        return;
-
-
-    const now =
-        audioContext.currentTime;
-
-
-    /*
-       صوت معدني صاعد
-    */
-
-    const osc =
-        audioContext.createOscillator();
-
-
-    const gain =
-        audioContext.createGain();
-
-
-    const filter =
-        audioContext.createBiquadFilter();
-
-
-    osc.type =
-        "sawtooth";
-
-
-    osc.frequency.setValueAtTime(
-        35,
-        now
-    );
-
-
-    osc.frequency.exponentialRampToValueAtTime(
-        180,
-        now+3
-    );
-
-
-    filter.type =
-        "lowpass";
-
-
-    filter.frequency.value =
-        1200;
-
-
-    gain.gain.setValueAtTime(
-        .001,
-        now
-    );
-
-
-    gain.gain.linearRampToValueAtTime(
-        .09,
-        now+.5
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-        .001,
-        now+3.2
-    );
-
-
-    osc.connect(filter);
-    filter.connect(gain);
-    gain.connect(masterGain);
-
-
-    osc.start(now);
-
-
-    osc.stop(
-        now+3.3
-    );
-
-
-    /*
-       احتكاك معدني
-    */
-
-    playNoise(
-        2.8,
-        .055,
-        650
-    );
-
+    if(!audioContext) initAudio();
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(40, audioContext.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(180, audioContext.currentTime+3);
+    gain.gain.setValueAtTime(.001, audioContext.currentTime);
+    gain.gain.linearRampToValueAtTime(.15, audioContext.currentTime+.5);
+    gain.gain.exponentialRampToValueAtTime(.001, audioContext.currentTime+3);
+    osc.connect(gain); gain.connect(masterGain);
+    osc.start(); osc.stop(audioContext.currentTime+3);
 }
 
-
-/* ==========================================================
-   الجو العام للعالم
-========================================================== */
+function robotSound(){
+    if(!audioContext) initAudio();
+    mysteriousTone(220, .2, .05);
+    setTimeout(function(){ mysteriousTone(110, .4, .07); }, 150);
+    setTimeout(function(){ mysteriousTone(70, .7, .05); }, 350);
+}
 
 function startAmbience(){
-
-    if(
-        ambienceStarted
-    )
-        return;
-
-
-    initAudio();
-
-
-    if(!audioContext)
-        return;
-
-
-    ambienceStarted =
-        true;
-
-
-    /*
-       Drone عميق
-    */
-
-    const drone =
-        audioContext.createOscillator();
-
-
-    const droneGain =
-        audioContext.createGain();
-
-
-    const droneFilter =
-        audioContext.createBiquadFilter();
-
-
-    drone.type =
-        "sine";
-
-
-    drone.frequency.value =
-        39;
-
-
-    droneFilter.type =
-        "lowpass";
-
-
-    droneFilter.frequency.value =
-        110;
-
-
-    droneGain.gain.value =
-        .025;
-
-
-    drone.connect(
-        droneFilter
-    );
-
-
-    droneFilter.connect(
-        droneGain
-    );
-
-
-    droneGain.connect(
-        masterGain
-    );
-
-
-    drone.start();
-
-
-    ambienceNodes.push(
-        drone,
-        droneGain
-    );
-
-
-    /*
-       طبقة ثانية متذبذبة
-    */
-
-    const secondDrone =
-        audioContext.createOscillator();
-
-
-    const secondGain =
-        audioContext.createGain();
-
-
-    secondDrone.type =
-        "triangle";
-
-
-    secondDrone.frequency.value =
-        57;
-
-
-    secondGain.gain.value =
-        .008;
-
-
-    secondDrone.connect(
-        secondGain
-    );
-
-
-    secondGain.connect(
-        masterGain
-    );
-
-
-    secondDrone.start();
-
-
-    ambienceNodes.push(
-        secondDrone,
-        secondGain
-    );
-
-
-    /*
-       اهتزاز بطيء للجو
-    */
-
-    setInterval(
-        function(){
-
-            if(
-                !audioContext ||
-                !ambienceStarted
-            )
-                return;
-
-
-            const now =
-                audioContext.currentTime;
-
-
-            const amount =
-                .012+
-                Math.random()*.014;
-
-
-            droneGain.gain.cancelScheduledValues(
-                now
-            );
-
-
-            droneGain.gain.linearRampToValueAtTime(
-                amount,
-                now+.8
-            );
-
-        },
-        1800
-    );
-
-
-    /*
-       هواء بعيد بشكل دوري
-    */
-
-    setInterval(
-        function(){
-
-            if(
-                STATE.worldStarted &&
-                audioEnabled
-            ){
-
-                playNoise(
-                    2.2,
-                    .012,
-                    500
-                );
-
-            }
-
-        },
-        7000
-    );
-
+    if(ambienceStarted) return;
+    ambienceStarted = true;
+    if(!audioContext) initAudio();
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.value = 42;
+    gain.gain.value = .025;
+    oscillator.connect(gain); gain.connect(masterGain);
+    oscillator.start();
+    setInterval(function(){
+        if(!audioContext) return;
+        const now = audioContext.currentTime;
+        gain.gain.cancelScheduledValues(now);
+        gain.gain.setValueAtTime(.015+ Math.random()*.02, now);
+    }, 1800);
 }
-
-
-/* ==========================================================
-   أصوات العالم العشوائية
-========================================================== */
 
 function randomWorldSound(){
-
-    if(
-        !STATE.worldStarted ||
-        !audioEnabled
-    )
-        return;
-
-
-    const random =
-        Math.random();
-
-
-    /*
-       55% لا يحدث شيء.
-       الصمت مهم جدًا في الرعب.
-    */
-
-    if(random < .55)
-        return;
-
-
-    if(random < .70){
-
-        mysteriousTone(
-            58,
-            1.3,
-            .025
-        );
-
-    }
-
-    else if(random < .82){
-
-        playNoise(
-            .9,
-            .018,
-            700
-        );
-
-    }
-
-    else if(random < .92){
-
-        distantStep();
-
-    }
-
-    else{
-
-        mysteriousTone(
-            145+
-            Math.random()*70,
-            .25,
-            .018
-        );
-
-    }
-
+    if(!STATE.worldStarted) return;
+    const sounds = [
+        function(){ mysteriousTone(60, 1.5, .035); },
+        function(){ mysteriousTone(90, .8, .025); },
+        function(){ mysteriousTone(35, 2, .04); },
+        function(){ mysteriousTone(180, .25, .02); }
+    ];
+    const sound = sounds[Math.floor(Math.random()* sounds.length)];
+    sound();
 }
 
+setInterval(randomWorldSound, 5000+ Math.random()*5000);
 
 /* ==========================================================
-   أصوات العالم العشوائية
+   منطق اللعبة
 ========================================================== */
-
-setInterval(
-    randomWorldSound,
-    6000
-);
-
-
-/* ==========================================================
-   نبض عند اقتراب الخطر
-========================================================== */
-
-let lastDangerPulse = 0;
-
-function dangerPulse(){
-
-    if(
-        !STATE.worldStarted ||
-        !camera ||
-        !robot
-    )
-        return;
-
-
-    const distance =
-        camera.position.distanceTo(
-            robot.position
-        );
-
-
-    if(
-        distance < 5 &&
-        Date.now()-lastDangerPulse > 1800
-    ){
-
-        lastDangerPulse =
-            Date.now();
-
-
-        darkPulse();
-
+function checkBan(){
+    const banned = localStorage.getItem("LAST_QUESTION_BANNED");
+    if(banned === "true"){
+        intro.style.display = "none";
+        banScreen.classList.add("active");
+        return true;
     }
-
+    return false;
 }
 
-
-/* ==========================================================
-   مراقبة الخطر
-========================================================== */
-
-setInterval(
-    dangerPulse,
-    300
-);
-
-
-/* ==========================================================
-   زر كتم الصوت
-========================================================== */
-
-function toggleGameAudio(){
-
-    initAudio();
-
-    if(!masterGain)
-        return;
-
-
-    audioEnabled =
-        !audioEnabled;
-
-
-    const target =
-        audioEnabled
-        ? .20
-        : 0;
-
-
-    masterGain.gain.cancelScheduledValues(
-        audioContext.currentTime
-    );
-
-
-    masterGain.gain.linearRampToValueAtTime(
-        target,
-        audioContext.currentTime+.25
-    );
-
+function choosePath(path){
+    choiceSound(); // تم تفعيل الصوت هنا
+    STATE.path = path;
+    choiceScreen.classList.remove("active");
+    philosophy.classList.add("active");
+    createNewQuestion();
 }
 
+function createNewQuestion(){
+    let available = QUESTIONS.filter((q,index)=> index !== STATE.questionIndex);
+    let random = Math.floor(Math.random()* available.length);
+    let selected = available[random];
+    STATE.currentQuestion = selected;
+    STATE.questionIndex = QUESTIONS.indexOf(selected);
+
+    questionCounter.innerHTML = "اختبار " + (STATE.stage) + " / لا توجد إعادة";
+    question.innerHTML = selected.text;
+    answers.innerHTML = "";
+
+    selected.answers.forEach(function(answer,index){
+        const button = document.createElement("button");
+        button.className = "answer";
+        button.innerHTML = answer;
+        button.onclick = function(){ answerQuestion(index); };
+        answers.appendChild(button);
+    });
+}
+
+function answerQuestion(index){
+    const q = STATE.currentQuestion;
+    if(index !== q.correct){
+        wrongSound(); // تفعيل صوت الخطأ
+        exile();
+        return;
+    }
+    correctSound(); // تفعيل صوت الإجابة الصحيحة
+    STATE.points += 500;
+    updateHUD();
+    philosophy.classList.remove("active");
+    intro.classList.add("hide");
+    setTimeout(enterWorld, 1400);
+}
+
+function exile(){
+    STATE.mistakes++;
+    localStorage.setItem("LAST_QUESTION_BANNED", "true");
+    philosophy.classList.remove("active");
+    intro.style.display = "none";
+    banScreen.classList.add("active");
+}
 
 /* ==========================================================
-   إيقاظ الصوت عند لمس الشاشة
+   THREE JS
 ========================================================== */
+let scene, camera, renderer, robot, gate, keyObject, secretObject, worldObjects=[];
+let clock = new THREE.Clock();
 
-window.addEventListener(
-    "touchstart",
-    function(){
+function initWorld(){
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x010203);
+    scene.fog = new THREE.FogExp2(0x010203, .035);
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, .1, 100);
+    camera.position.set(0, 1.7, 9);
+    
+    renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-        initAudio();
+    const ambient = new THREE.AmbientLight(0x444444, .6);
+    scene.add(ambient);
+    const moon = new THREE.DirectionalLight(0x999999, 1.3);
+    moon.position.set(4, 8, 3);
+    scene.add(moon);
 
-    },
-    {
-        passive:true
+    createGround(); createGate(); createRobot(); createKey(); createSecret(); createRuins(); createParticles();
+
+    window.addEventListener("resize", resize);
+    document.addEventListener("mousemove", cameraMouse);
+    document.addEventListener("touchmove", cameraTouch, {passive:true});
+    animate();
+}
+
+function createGround(){
+    const ground = new THREE.Mesh( new THREE.PlaneGeometry(50, 50), new THREE.MeshStandardMaterial({ color:0x07090b, roughness:1, metalness:.15 }) );
+    ground.rotation.x = -Math.PI/2; ground.position.y = -1; scene.add(ground);
+}
+
+function createGate(){
+    gate = new THREE.Group();
+    gate.position.set(0, 1.5, -5);
+    const material = new THREE.MeshStandardMaterial({ color:0x121417, metalness:.8, roughness:.3 });
+    const left = new THREE.Mesh( new THREE.BoxGeometry(2, 5, .5), material );
+    const right = new THREE.Mesh( new THREE.BoxGeometry(2, 5, .5), material );
+    const top = new THREE.Mesh( new THREE.BoxGeometry(6, 1, .5), material );
+    left.position.x = -2; right.position.x = 2; top.position.y = 2;
+    gate.add(left, right, top);
+    gate.userData.left = left; gate.userData.right = right;
+    scene.add(gate); worldObjects.push(gate);
+}
+
+function createRobot(){
+    robot = new THREE.Group();
+    robot.position.set(0, 0, 4);
+    const bodyMaterial = new THREE.MeshStandardMaterial({ color:0x1b1e22, metalness:.9, roughness:.3 });
+    const body = new THREE.Mesh( new THREE.BoxGeometry(.8, 1, .65), bodyMaterial );
+    robot.add(body);
+    const head = new THREE.Mesh( new THREE.BoxGeometry(.9, .65, .7), bodyMaterial );
+    head.position.y = .85; robot.add(head);
+    const eyeMaterial = new THREE.MeshBasicMaterial({ color:0xdddddd });
+    for(let x=-.2; x<=.2; x+=.4){
+        const eye = new THREE.Mesh( new THREE.SphereGeometry(.08, 16, 16), eyeMaterial.clone() );
+        eye.position.set(x, .85, -.36); robot.add(eye);
     }
-);
+    const legMaterial = bodyMaterial.clone();
+    for(let x=-.22; x<=.22; x+=.44){
+        const leg = new THREE.Mesh( new THREE.BoxGeometry(.2, .7, .25), legMaterial );
+        leg.position.set(x, -.75, 0); robot.add(leg);
+    }
+    scene.add(robot);
+}
+
+function createKey(){
+    keyObject = new THREE.Group();
+    const ring = new THREE.Mesh( new THREE.TorusGeometry(.22, .05, 12, 32), new THREE.MeshStandardMaterial({ color:0x999999, metalness:1, roughness:.2 }) );
+    const stem = new THREE.Mesh( new THREE.BoxGeometry(.08, .5, .08), new THREE.MeshStandardMaterial({ color:0x888888, metalness:1 }) );
+    stem.rotation.z = Math.PI/2; stem.position.x = .3;
+    keyObject.add(ring, stem); keyObject.position.set(-3, -.3, 0);
+    scene.add(keyObject); worldObjects.push(keyObject);
+}
+
+function createSecret(){
+    secretObject = new THREE.Group();
+    const outer = new THREE.Mesh( new THREE.TorusGeometry(.4, .025, 10, 50), new THREE.MeshBasicMaterial({ color:0x888888 }) );
+    const core = new THREE.Mesh( new THREE.SphereGeometry(.09, 16, 16), new THREE.MeshBasicMaterial({ color:0xdddddd }) );
+    secretObject.add(outer, core); secretObject.position.set(3, 1.1, -1);
+    scene.add(secretObject); worldObjects.push(secretObject);
+}
+
+function createRuins(){
+    for(let i=0; i<25; i++){
+        const h = 1+ Math.random()*4;
+        const object = new THREE.Mesh( new THREE.BoxGeometry(.6+ Math.random(), h, .6+ Math.random()), new THREE.MeshStandardMaterial({ color: 0x080a0c, roughness:.9, metalness:.4 }) );
+        const angle = Math.random()* Math.PI*2;
+        const radius = 7+ Math.random()*15;
+        object.position.set( Math.cos(angle)* radius, h/2-1, Math.sin(angle)* radius );
+        object.rotation.y = Math.random()*Math.PI; scene.add(object);
+    }
+}
+
+function createParticles(){
+    const geometry = new THREE.BufferGeometry();
+    const data=[];
+    for(let i=0; i<1500; i++){
+        data.push( (Math.random()-.5)*40, Math.random()*15-2, (Math.random()-.5)*40 );
+    }
+    geometry.setAttribute( "position", new THREE.Float32BufferAttribute(data, 3) );
+    const material = new THREE.PointsMaterial({ color:0x777777, size:.035, transparent:true, opacity:.45 });
+    const points = new THREE.Points(geometry, material); scene.add(points);
+}
+
+function enterWorld(){
+    startAmbience(); // تشغيل جو العالم الصوتي
+    STATE.worldStarted = true;
+    game.classList.add("active");
+    initWorld();
+    robotSound(); // تفاعل صوتي للروبوت
+    robotText.innerHTML = "أهلًا بك..." + "<br>" + "كنت أتساءل متى ستصل.";
+}
+
+function updateHUD(){
+    pointsElement.innerHTML = STATE.points;
+    mistakesElement.innerHTML = STATE.mistakes;
+    stageName.innerHTML = "المرحلة " + STATE.stage;
+}
+
+function interact(){
+    if(!STATE.worldStarted) return;
+    const distanceToKey = camera.position.distanceTo(keyObject.position);
+    const distanceToSecret = camera.position.distanceTo(secretObject.position);
+    const distanceToGate = camera.position.distanceTo(gate.position);
+
+    if(distanceToKey < 4 && keyObject.visible){ takeKey(); return; }
+    if(distanceToSecret < 4 && secretObject.visible){ discoverSecret(); return; }
+    if(distanceToGate < 5){ gateChallenge(); return; }
+}
+
+function takeKey(){
+    STATE.key = true; STATE.points += 250; keyObject.visible = false;
+    choiceSound();
+    robotText.innerHTML = "أخذت المفتاح..." + "<br>" + "لكن لماذا أشعر أنك لم تكن تبحث عنه؟";
+    updateHUD(); interactButton.classList.remove("show");
+}
+
+function discoverSecret(){
+    STATE.secret = true; STATE.points += 500; secretObject.visible = false;
+    correctSound();
+    robotText.innerHTML = "أنت وجدته." + "<br>" + "لا تخبرني بما رأيت.";
+    updateHUD();
+}
+
+function gateChallenge(){
+    if(!STATE.key){
+        wrongSound();
+        robotText.innerHTML = "البوابة لا تقبل الفراغ." + "<br>" + "ابحث.";
+        return;
+    }
+    choiceSound();
+    openPuzzle("المرحلة الثانية", "ما الشيء الذي يزداد كلما أخذت منه؟", ["العمر", "الحفرة", "الخوف", "المعرفة"], 1);
+}
+
+function openPuzzle(title, description, choices, correct){
+    puzzleModal.classList.add("active");
+    document.getElementById("puzzleTitle").innerHTML = title;
+    document.getElementById("puzzleDescription").innerHTML = description;
+    const container = document.getElementById("puzzleAnswers");
+    container.innerHTML = "";
+    document.getElementById("puzzleResult").innerHTML = "";
+    
+    choices.forEach(function(choice,index){
+        const button = document.createElement("button");
+        button.className = "modalAnswer";
+        button.innerHTML = choice;
+        button.onclick = function(){
+            if(index === correct){ puzzleSuccess(); }else{ puzzleFailure(); }
+        };
+        container.appendChild(button);
+    });
+}
+
+function puzzleSuccess(){
+    correctSound();
+    STATE.puzzleSolved = true; STATE.points += 750;
+    document.getElementById("puzzleResult").innerHTML = "صحيح.";
+    setTimeout(function(){ puzzleModal.classList.remove("active"); openGate(); }, 1000);
+}
+
+function puzzleFailure(){
+    wrongSound();
+    STATE.mistakes++; updateHUD(); puzzleModal.classList.remove("active");
+    robotText.innerHTML = "خطأ." + "<br>" + "لقد أعطيتني سببًا جديدًا لطردك.";
+    setTimeout(exileFromWorld, 1200);
+}
+
+function exileFromWorld(){
+    localStorage.setItem("LAST_QUESTION_BANNED", "true");
+    game.classList.remove("active"); banScreen.classList.add("active");
+}
+
+function openGate(){
+    if(STATE.gateOpened) return;
+    STATE.gateOpened = true;
+    gateSound(); // تشغيل صوت البوابة
+    robotSound();
+    robotText.innerHTML = "الباب مفتوح..." + "<br>" + "الآن يبدأ الجزء الحقيقي.";
+    let progress=0;
+    const timer = setInterval(function(){
+        progress += .025;
+        gate.userData.left.position.x = -2 - progress*2;
+        gate.userData.right.position.x = 2 + progress*2;
+        if(progress>=1){
+            clearInterval(timer);
+            STATE.stage = 3; updateHUD();
+            setTimeout(nextWorldChallenge, 1500);
+        }
+    }, 30);
+}
+
+function nextWorldChallenge(){
+    robotSound();
+    robotText.innerHTML = "توقّف." + "<br>" + "هل تسمع ذلك؟";
+    setTimeout(function(){ robotSound(); robotText.innerHTML = "هناك شيء في الممر." + "<br>" + "ولا أعتقد أنه أنا."; }, 3500);
+    STATE.points += 1000; updateHUD();
+}
+
+let mouseX=0, mouseY=0;
+function cameraMouse(e){ mouseX = e.clientX/window.innerWidth-.5; mouseY = e.clientY/window.innerHeight-.5; }
+function cameraTouch(e){ if(!e.touches.length) return; mouseX = e.touches[0].clientX/window.innerWidth-.5; mouseY = e.touches[0].clientY/window.innerHeight-.5; }
+
+setInterval(function(){
+    if(!STATE.worldStarted) return;
+    const candidates=[keyObject, secretObject, gate];
+    let near=false;
+    candidates.forEach(function(object){
+        if(!object || !object.visible) return;
+        if(camera.position.distanceTo(object.position) < 4.5) near=true;
+    });
+    if(near) interactButton.classList.add("show"); else interactButton.classList.remove("show");
+}, 150);
+
+function updateRobot(){
+    if(!robot) return;
+    const time = clock.getElapsedTime();
+    robot.position.y = Math.sin(time*2)*.035;
+    robot.rotation.y = Math.sin(time*.5)*.15;
+    if(STATE.gateOpened){ robot.position.x += (camera.position.x - robot.position.x)*.002; }
+}
+
+function updateAtmosphere(){
+    if(!scene) return;
+    const time = clock.getElapsedTime();
+    scene.fog.density = .033+ Math.sin(time*.15)*.006;
+}
+
+function rotateQuestionMemory(){
+    const used = JSON.parse(localStorage.getItem("USED_QUESTIONS") || "[]");
+    if(STATE.questionIndex >= 0 && !used.includes(STATE.questionIndex)){ used.push(STATE.questionIndex); }
+    localStorage.setItem("USED_QUESTIONS", JSON.stringify(used));
+}
+
+setInterval(function(){ if(STATE.worldStarted){ localStorage.setItem("UNKNOWN_PROGRESS", JSON.stringify(STATE)); } }, 5000);
+
+function resize(){
+    if(!camera || !renderer) return;
+    camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function animate(){
+    requestAnimationFrame(animate);
+    if(!scene) return;
+    updateRobot(); updateAtmosphere();
+    camera.position.x += (mouseX*.8 - camera.position.x)*.025;
+    camera.position.y += (1.7 - mouseY*.35 - camera.position.y)*.025;
+    camera.lookAt(0, .5, -2);
+    renderer.render(scene, camera);
+}
+
+if(!checkBan()){
+    // اللعبة تبدأ تلقائياً وتنتظر اختيار اللاعب
+}
+
+</script>
+</body>
+</html>
